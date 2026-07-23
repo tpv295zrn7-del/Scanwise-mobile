@@ -5,3 +5,30 @@ coverage
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Environment secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Android keystore — never commit (keep secure backup elsewhere)
+android/app/keystore/*.keystore
+android/app/keystore/*.jks
+
+# iOS build artifacts
+ios/build/
+ios/Pods/
+ios/*.xcworkspace/xcuserdata/
+ios/DerivedData/
+
+# Android build artifacts
+android/.gradle/
+android/app/build/
+android/build/
+
+# Fastlane
+fastlane/AuthKey_*.p8
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
