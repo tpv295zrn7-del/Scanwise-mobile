@@ -1,4 +1,5 @@
 import { ConfidenceBadge } from '../components/ConfidenceBadge';
+import { FormButton } from '../components/FormButton';
 
 const scoreGoalMatch = (goal = '', comparison = {}) => {
   if (goal === 'low_sugar') return comparison.sugarDelta < 0;
@@ -12,16 +13,20 @@ const compareNutrition = (original = {}, alternative = {}) => {
   const alternativeNutrition = alternative.nutrition || {};
 
   return {
-    caloriesDelta: (alternativeNutrition.calories || 0) - (originalNutrition.calories || 0),
+    caloriesDelta:
+      (alternativeNutrition.calories || 0) - (originalNutrition.calories || 0),
     sugarDelta: (alternativeNutrition.sugar || 0) - (originalNutrition.sugar || 0),
-    sodiumDelta: (alternativeNutrition.sodium || 0) - (originalNutrition.sodium || 0),
-    proteinDelta: (alternativeNutrition.protein || 0) - (originalNutrition.protein || 0)
+    sodiumDelta:
+      (alternativeNutrition.sodium || 0) - (originalNutrition.sodium || 0),
+    proteinDelta:
+      (alternativeNutrition.protein || 0) - (originalNutrition.protein || 0)
   };
 };
 
 export const ProductResultScreen = ({
+  scanResult,
+  product,
   confidence = 'verified',
-  product = {},
   currentScan = null,
   alternatives = [],
   userGoals = [],
@@ -32,14 +37,22 @@ export const ProductResultScreen = ({
   onHaptic,
   onCompareToggle
 } = {}) => {
+  const initialProduct = currentScan || scanResult || product || {};
+  const resolvedConfidence = initialProduct.confidence || confidence;
+  const saveIcon = require('../assets/icon-save.png');
+  const compareIcon = require('../assets/icon-compare.png');
+  const correctIcon = require('../assets/icon-correct.png');
+
   let selectedIndex = 0;
   let comparisonVisible = false;
   let saved = initiallySaved;
-  let activeScan = currentScan || product;
+  let activeScan = initialProduct;
 
   const hydrateAlternative = (alternative) => {
-    const nutritionalComparison = compareNutrition(product, alternative);
-    const goalMatch = userGoals.some((goal) => scoreGoalMatch(goal, nutritionalComparison));
+    const nutritionalComparison = compareNutrition(initialProduct, alternative);
+    const goalMatch = userGoals.some((goal) =>
+      scoreGoalMatch(goal, nutritionalComparison)
+    );
 
     return {
       ...alternative,
@@ -49,16 +62,31 @@ export const ProductResultScreen = ({
   };
 
   const getAlternatives = () =>
-    alternatives.map((alternative, index) => ({
-      ...hydrateAlternative(alternative),
+    alternatives.map((alternativeItem, index) => ({
+      ...hydrateAlternative(alternativeItem),
       selected: index === selectedIndex
     }));
 
   return {
-    badge: ConfidenceBadge({ type: confidence }),
-    saveIcon: require('../assets/icon-save.png'),
-    compareIcon: require('../assets/icon-compare.png'),
-    correctIcon: require('../assets/icon-correct.png'),
+    badge: ConfidenceBadge({ type: resolvedConfidence }),
+    saveIcon,
+    compareIcon,
+    correctIcon,
+    productName: activeScan.name || 'Unknown Product',
+    brand: activeScan.brand || 'Unknown Brand',
+    barcode: activeScan.barcode || null,
+    confidence: resolvedConfidence,
+    nutritionInfo:
+      activeScan.nutritionInfo || 'Nutrition information coming soon.',
+    saveButton: FormButton({
+      title: saved ? 'Unsave' : 'Save',
+      leftIcon: saveIcon
+    }),
+    compareButton: FormButton({
+      title: comparisonVisible ? 'Hide Compare' : 'Compare',
+      leftIcon: compareIcon
+    }),
+    correctButton: FormButton({ title: 'Correct', leftIcon: correctIcon }),
     alternativesTitle: 'Alternatives',
     get alternatives() {
       return getAlternatives();
@@ -89,7 +117,10 @@ export const ProductResultScreen = ({
       return comparisonVisible;
     },
     selectAlternative(index) {
-      if (index < 0 || index >= alternatives.length) return null;
+      if (index < 0 || index >= alternatives.length) {
+        return null;
+      }
+
       selectedIndex = index;
       activeScan = alternatives[index];
       if (onSelectAlternative) {

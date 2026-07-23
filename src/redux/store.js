@@ -1,11 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
+import alternatives from './slices/alternativesSlice';
 import auth from './slices/authSlice';
+import corrections from './slices/correctionsSlice';
 import healthProfiles from './slices/healthProfilesSlice';
 import onboarding from './slices/onboardingSlice';
-import alternatives from './slices/alternativesSlice';
 import savedItems from './slices/savedItemsSlice';
-import corrections from './slices/correctionsSlice';
 import scan from './slices/scanSlice';
+import scans from './slices/scansSlice';
 
 export const createStore = () =>
   configureStore({
@@ -13,6 +14,7 @@ export const createStore = () =>
       auth,
       healthProfiles,
       onboarding,
+      scans,
       alternatives,
       savedItems,
       corrections,

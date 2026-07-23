@@ -9,4 +9,7 @@ test('store initializes and selectors export', () => {
   expect(authSelectors.selectAuthState(state)).toBeTruthy();
   expect(profileSelectors.selectHealthProfile(state)).toBeTruthy();
   expect(onboardingSelectors.selectOnboardingState(state)).toBeTruthy();
+  expect(state.scans).toEqual(
+    expect.objectContaining({ currentScan: null, scanHistory: [] })
+  );
 });

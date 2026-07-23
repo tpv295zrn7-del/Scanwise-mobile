@@ -87,6 +87,7 @@ describe('api service', () => {
     await endpoints.resetPassword({ token: 't', password: 'Aa!23456' });
     await endpoints.getProfile();
     await endpoints.updateProfile({ goals: [] });
+    await endpoints.scanProduct({ barcode: '0123456789012' });
     await endpoints.scanBarcode({ barcode: '123' });
     await endpoints.getAlternatives('123');
     await endpoints.addSavedItem({ id: 's1' });
