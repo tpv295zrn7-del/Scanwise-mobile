@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "ScanWise",
+    "slug": "scanwise-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/app-icon.png",
+    "scheme": "scanwise",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assets/app-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/app-icon.png",
+        "backgroundColor": "#10B981"
+      },
+      "permissions": ["CAMERA"]
+    }
+  }
+}
