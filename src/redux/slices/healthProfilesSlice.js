@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { endpoints } from '../../services/api';
 
+const MAX_FAMILY_MEMBERS = 5;
+
 const initialState = {
   profile: { allergies: [], familyMembers: [], goals: [] },
   status: 'idle',
@@ -29,7 +31,7 @@ const healthProfilesSlice = createSlice({
   initialState,
   reducers: {
     addFamilyMember: (state, action) => {
-      if (state.profile.familyMembers.length < 5) {
+      if (state.profile.familyMembers.length < MAX_FAMILY_MEMBERS) {
         state.profile.familyMembers.push(action.payload);
       }
     },

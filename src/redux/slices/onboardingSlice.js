@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const STORAGE_KEY = 'scanwise_onboarding';
+const TOTAL_ONBOARDING_STEPS = 5;
+const MAX_STEP_INDEX = TOTAL_ONBOARDING_STEPS - 1;
 
 const initialState = {
   currentStep: 0,
@@ -30,20 +32,23 @@ const onboardingSlice = createSlice({
   initialState,
   reducers: {
     setCurrentStep: (state, action) => {
-      state.currentStep = Math.max(0, Math.min(5, action.payload));
-      state.progress = state.currentStep / 5;
+      state.currentStep = Math.max(
+        0,
+        Math.min(MAX_STEP_INDEX, action.payload)
+      );
+      state.progress = state.currentStep / MAX_STEP_INDEX;
     },
     markStepComplete: (state, action) => {
       if (!state.completedSteps.includes(action.payload)) {
         state.completedSteps.push(action.payload);
       }
-      state.progress = state.completedSteps.length / 5;
+      state.progress = state.completedSteps.length / TOTAL_ONBOARDING_STEPS;
     }
   },
   extraReducers: (builder) => {
     builder.addCase(
       loadOnboardingState.fulfilled,
-      (_, action) => action.payload
+      (_state, action) => action.payload
     );
   }
 });

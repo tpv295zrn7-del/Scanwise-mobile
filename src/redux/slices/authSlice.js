@@ -3,7 +3,7 @@ import { endpoints } from '../../services/api';
 import { clearTokens, setTokens } from '../../services/storage';
 import { validatePassword } from '../../services/auth';
 
-const MAX_ATTEMPTS = 5;
+export const MAX_LOGIN_ATTEMPTS = 5;
 
 const initialState = {
   user: null,
@@ -88,7 +88,7 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
         state.failedAttempts += 1;
-        if (state.failedAttempts >= MAX_ATTEMPTS) {
+        if (state.failedAttempts >= MAX_LOGIN_ATTEMPTS) {
           state.isLocked = true;
         }
       })

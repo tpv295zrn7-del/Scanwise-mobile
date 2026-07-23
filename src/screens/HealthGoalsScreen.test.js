@@ -1,4 +1,4 @@
-import { HealthGoalsScreen } from './HealthGoalsScreen';
+import { HealthGoalsScreen, toggleGoalSelection } from './HealthGoalsScreen';
 
 test('goal toggle and limits', () => {
   const dispatch = jest.fn();
@@ -9,4 +9,9 @@ test('goal toggle and limits', () => {
   );
   expect(screen.toggle('fiber').length).toBeLessThanOrEqual(5);
   expect(screen.save()).toBe('saved');
+});
+
+test('toggleGoalSelection helper handles invalid and deselect', () => {
+  expect(toggleGoalSelection(['sugar'], 'unknown')).toEqual(['sugar']);
+  expect(toggleGoalSelection(['sugar'], 'sugar')).toEqual([]);
 });

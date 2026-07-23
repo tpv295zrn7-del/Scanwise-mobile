@@ -13,7 +13,7 @@ describe('onboardingSlice', () => {
   test('step and progress tracking', () => {
     const s = store();
     s.dispatch(setCurrentStep(10));
-    expect(s.getState().onboarding.currentStep).toBe(5);
+    expect(s.getState().onboarding.currentStep).toBe(4);
     s.dispatch(setCurrentStep(-3));
     expect(s.getState().onboarding.currentStep).toBe(0);
     s.dispatch(markStepComplete(1));
