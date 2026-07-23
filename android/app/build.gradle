@@ -15,10 +15,30 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('keystore/scanwise.keystore')
-            storePassword project.findProperty('KEYSTORE_PASS') ?: ''
-            keyAlias project.findProperty('KEY_ALIAS') ?: ''
-            keyPassword project.findProperty('KEY_PASS') ?: ''
+            def keystoreFile = project.findProperty('KEYSTORE_FILE') ?: 'keystore/scanwise.keystore'
+            def keystorePass = project.findProperty('KEYSTORE_PASS') ?: ''
+            def keyAlias = project.findProperty('KEY_ALIAS') ?: ''
+            def keyPass = project.findProperty('KEY_PASS') ?: ''
+
+            if (keystorePass.isEmpty() || keyAlias.isEmpty() || keyPass.isEmpty()) {
+                throw new GradleException(
+                    "Release signing credentials are missing. " +
+                    "Set KEYSTORE_PASS, KEY_ALIAS, and KEY_PASS project properties."
+                )
+            }
+
+            def resolvedKeystore = file(keystoreFile)
+            if (!resolvedKeystore.exists()) {
+                throw new GradleException(
+                    "Keystore file not found: ${resolvedKeystore.absolutePath}. " +
+                    "Run scripts/generate-keystore.sh or set KEYSTORE_FILE to the correct path."
+                )
+            }
+
+            storeFile resolvedKeystore
+            storePassword keystorePass
+            keyAlias keyAlias
+            keyPassword keyPass
         }
     }
 
@@ -45,7 +65,7 @@ android {
             reset()
             enable true
             universalApk true
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            include "armeabi-v7a", "arm64-v8a"
         }
     }
 }

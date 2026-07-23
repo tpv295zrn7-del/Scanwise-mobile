@@ -161,7 +161,7 @@ This triggers:
 
 Watch the run at:
 ```
-https://github.com/tpv295zrn7-del/Scanwise-mobile/actions
+https://github.com/<your-org>/Scanwise-mobile/actions
 ```
 
 ---

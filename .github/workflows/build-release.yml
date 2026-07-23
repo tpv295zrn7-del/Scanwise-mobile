@@ -58,9 +58,7 @@ jobs:
         run: |
           mkdir -p android/app/keystore
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore/scanwise.keystore
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
 
       - name: Build Android release
         run: ./scripts/build-android.sh

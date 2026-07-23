@@ -6,6 +6,8 @@ default_platform(:ios)
 platform :ios do
   desc "Build and upload to TestFlight"
   lane :beta do
+    # Requires: fastlane/AuthKey_<APPLE_KEY_ID>.p8
+    # See DEPLOYMENT.md → "iOS — TestFlight & App Store" for setup instructions.
     build_app(
       workspace: "ios/Scanwise.xcworkspace",
       scheme: "Scanwise",
@@ -24,6 +26,8 @@ platform :ios do
 
   desc "Build and submit directly to App Store"
   lane :release do
+    # Requires: fastlane/AuthKey_<APPLE_KEY_ID>.p8
+    # See DEPLOYMENT.md → "iOS — TestFlight & App Store" for setup instructions.
     build_app(
       workspace: "ios/Scanwise.xcworkspace",
       scheme: "Scanwise",
