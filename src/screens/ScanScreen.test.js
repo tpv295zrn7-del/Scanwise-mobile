@@ -253,6 +253,17 @@ describe('ScanScreen', () => {
     await expect(screen.submitManualEntry('222')).resolves.toBeNull();
   });
 
+
+  test('preserves unknown permission state from injected requester', async () => {
+    const screen = ScanScreen({
+      requestCameraPermission: jest.fn().mockResolvedValue('unknown')
+    });
+
+    await expect(screen.requestPermission()).resolves.toBe('unknown');
+    expect(screen.openSettings()).toBe(false);
+    expect(screen.error).toBe('Camera permission is required to scan products.');
+  });
+
   test('defaults permission to denied when requester is missing', async () => {
     const navigation = { navigate: jest.fn() };
     const screen = ScanScreen({
