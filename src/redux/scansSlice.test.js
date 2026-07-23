@@ -48,7 +48,10 @@ describe('scansSlice', () => {
 
     expect(action.type).toContain('fulfilled');
     expect(selectCurrentScan(store.getState())).toEqual(
-      expect.objectContaining({ confidence: 'verified', barcode: '0123456789012' })
+      expect.objectContaining({
+        confidence: 'verified',
+        barcode: '0123456789012'
+      })
     );
     expect(selectScanHistory(store.getState())).toHaveLength(1);
     expect(selectScansLoading(store.getState())).toBe(false);
@@ -69,6 +72,7 @@ describe('scansSlice', () => {
 
     store.dispatch(setCurrentScan(mockScanResponses.estimated));
     store.dispatch(addToHistory(mockScanResponses.incomplete));
+    store.dispatch(addToHistory(null));
     store.dispatch(clearError());
 
     expect(selectCurrentScan(store.getState())).toEqual(
@@ -78,6 +82,7 @@ describe('scansSlice', () => {
       mockScanResponses.incomplete
     );
     expect(normalizeScanConfidence('partial')).toBe('estimated');
+    expect(normalizeScanConfidence('found')).toBe('verified');
     expect(normalizeScanConfidence('unknown')).toBe('incomplete');
   });
 });

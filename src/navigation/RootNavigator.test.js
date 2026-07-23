@@ -37,3 +37,9 @@ test('route guards and linking', () => {
 test('camera permissions are requested on startup when missing', async () => {
   await expect(ensureCameraPermission()).resolves.toBe('granted');
 });
+
+test('camera permissions stay denied when request is rejected', async () => {
+  const permissions = require('../services/cameraPermissions');
+  permissions.requestCameraPermission.mockResolvedValueOnce(false);
+  await expect(ensureCameraPermission()).resolves.toBe('denied');
+});

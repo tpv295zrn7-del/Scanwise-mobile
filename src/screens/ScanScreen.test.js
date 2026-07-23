@@ -46,6 +46,25 @@ describe('ScanScreen', () => {
     expect(triggerNotification).toHaveBeenCalled();
   });
 
+  test('focusCamera uses existing granted permission without requesting again', async () => {
+    const screen = ScanScreen({ initialPermission: 'granted' });
+
+    await expect(screen.focusCamera()).resolves.toBe(true);
+    expect(checkCameraPermission).not.toHaveBeenCalled();
+    expect(requestCameraPermission).not.toHaveBeenCalled();
+  });
+
+  test('focusCamera reports permission denial', async () => {
+    requestCameraPermission.mockResolvedValue(false);
+    const screen = ScanScreen();
+
+    await expect(screen.focusCamera()).resolves.toBe(false);
+    expect(screen.error).toBe(
+      'Camera permission is required to scan products.'
+    );
+    expect(screen.cameraFocused).toBe(false);
+  });
+
   test('barcode detection triggers scan dispatch and success haptic', async () => {
     const dispatch = jest.fn(() =>
       Promise.resolve({
@@ -84,6 +103,34 @@ describe('ScanScreen', () => {
     expect(screen.loading).toBe(false);
   });
 
+  test('empty barcode input triggers validation error', async () => {
+    const screen = ScanScreen({ initialPermission: 'granted' });
+
+    await expect(screen.submitBarcode('   ')).resolves.toBeNull();
+    expect(screen.error).toBe('Enter a barcode to continue.');
+    expect(triggerError).toHaveBeenCalled();
+  });
+
+  test('duplicate scans are ignored while already loading', async () => {
+    let resolveDispatch;
+    const dispatch = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveDispatch = resolve;
+        })
+    );
+    const screen = ScanScreen({ dispatch, initialPermission: 'granted' });
+
+    const pending = screen.submitBarcode('123456');
+    await expect(screen.submitBarcode('123456')).resolves.toBeNull();
+    resolveDispatch({
+      type: 'scans/scanProductByBarcode/fulfilled',
+      payload: mockScanResponses.verified
+    });
+    await pending;
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  });
+
   test('error handling allows retry after failed scan', async () => {
     const dispatch = jest.fn(() =>
       Promise.resolve({
@@ -115,6 +162,16 @@ describe('ScanScreen', () => {
 
     expect(scanProductByBarcode).toHaveBeenCalledWith('0987654321098');
     expect(screen.currentScan).toEqual(mockScanResponses.estimated);
+  });
+
+  test('rawValue barcode payloads are supported', async () => {
+    const dispatch = jest.fn(() => Promise.resolve(mockScanResponses.verified));
+    const screen = ScanScreen({ dispatch, initialPermission: 'granted' });
+
+    const result = await screen.handleBarcodeDetected({ rawValue: '222222' });
+
+    expect(scanProductByBarcode).toHaveBeenCalledWith('222222');
+    expect(result).toEqual(mockScanResponses.verified);
   });
 
   test('navigates to ProductResultScreen on successful scan', async () => {

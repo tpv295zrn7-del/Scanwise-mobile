@@ -9,7 +9,8 @@ import {
   triggerSuccess
 } from '../services/haptic';
 
-const CAMERA_PERMISSION_ERROR = 'Camera permission is required to scan products.';
+const CAMERA_PERMISSION_ERROR =
+  'Camera permission is required to scan products.';
 const MANUAL_ENTRY_ERROR = 'Enter a barcode to continue.';
 const DEFAULT_SCAN_ERROR = 'Unable to scan product. Please try again.';
 
@@ -134,7 +135,8 @@ export const ScanScreen = ({
   screen.handleBarcodeDetected = async (value) =>
     screen.submitBarcode(getDetectedValue(value));
 
-  screen.submitManualEntry = async () => screen.submitBarcode(screen.manualEntry);
+  screen.submitManualEntry = async () =>
+    screen.submitBarcode(screen.manualEntry);
 
   return screen;
 };

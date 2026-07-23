@@ -38,7 +38,9 @@ const supportsCamera = async () => {
     return true;
   }
   try {
-    const hasCamera = await deviceInfo.hasSystemFeature('android.hardware.camera');
+    const hasCamera = await deviceInfo.hasSystemFeature(
+      'android.hardware.camera'
+    );
     return hasCamera !== false;
   } catch (_error) {
     return true;
@@ -84,7 +86,10 @@ export const requestCameraPermission = async () => {
 
   const { Camera } = getVisionCameraModule();
   if (typeof Camera?.requestCameraPermission === 'function') {
-    return normalizePermissionStatus(await Camera.requestCameraPermission()) === 'granted';
+    return (
+      normalizePermissionStatus(await Camera.requestCameraPermission()) ===
+      'granted'
+    );
   }
 
   return false;

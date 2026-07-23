@@ -43,6 +43,39 @@ describe('cameraPermissions service', () => {
     await expect(checkCameraPermission()).resolves.toBe('denied');
   });
 
+  test('checkCameraPermission returns granted from Android permission check', async () => {
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'android' },
+      PermissionsAndroid: {
+        PERMISSIONS: { CAMERA: 'camera' },
+        check: jest.fn(() => Promise.resolve(true))
+      }
+    }));
+    jest.doMock('react-native-device-info', () => ({}));
+    jest.doMock('react-native-vision-camera', () => ({
+      Camera: {}
+    }));
+
+    const { checkCameraPermission } = loadModule();
+    await expect(checkCameraPermission()).resolves.toBe('granted');
+  });
+
+  test('checkCameraPermission falls back to denied without camera handlers', async () => {
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'ios' },
+      PermissionsAndroid: {}
+    }));
+    jest.doMock('react-native-device-info', () => ({
+      hasSystemFeature: jest.fn(() => Promise.reject(new Error('unsupported')))
+    }));
+    jest.doMock('react-native-vision-camera', () => ({
+      Camera: {}
+    }));
+
+    const { checkCameraPermission } = loadModule();
+    await expect(checkCameraPermission()).resolves.toBe('denied');
+  });
+
   test('requestCameraPermission uses Android permissions result', async () => {
     const request = jest.fn(() => Promise.resolve('granted'));
 
@@ -76,6 +109,40 @@ describe('cameraPermissions service', () => {
       Camera: {
         requestCameraPermission: jest.fn(() => Promise.resolve('denied'))
       }
+    }));
+
+    const { requestCameraPermission } = loadModule();
+    await expect(requestCameraPermission()).resolves.toBe(false);
+  });
+
+  test('requestCameraPermission falls back to vision camera on Android when needed', async () => {
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'android' },
+      PermissionsAndroid: {
+        PERMISSIONS: { CAMERA: 'camera' },
+        RESULTS: { GRANTED: 'granted' },
+        request: jest.fn(() => Promise.resolve('denied'))
+      }
+    }));
+    jest.doMock('react-native-device-info', () => ({}));
+    jest.doMock('react-native-vision-camera', () => ({
+      Camera: {
+        requestCameraPermission: jest.fn(() => Promise.resolve('authorized'))
+      }
+    }));
+
+    const { requestCameraPermission } = loadModule();
+    await expect(requestCameraPermission()).resolves.toBe(true);
+  });
+
+  test('requestCameraPermission returns false without any permission handlers', async () => {
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'unknown' },
+      PermissionsAndroid: {}
+    }));
+    jest.doMock('react-native-device-info', () => ({}));
+    jest.doMock('react-native-vision-camera', () => ({
+      Camera: {}
     }));
 
     const { requestCameraPermission } = loadModule();
