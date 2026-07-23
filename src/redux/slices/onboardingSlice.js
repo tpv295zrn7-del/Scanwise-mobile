@@ -5,6 +5,11 @@ const STORAGE_KEY = 'scanwise_onboarding';
 const TOTAL_ONBOARDING_STEPS = 5;
 const MAX_STEP_INDEX = TOTAL_ONBOARDING_STEPS - 1;
 const STEP_PROGRESS_DENOMINATOR = Math.max(1, MAX_STEP_INDEX);
+const calculateProgress = (currentStep, completedCount) => {
+  const stepProgress = currentStep / STEP_PROGRESS_DENOMINATOR;
+  const completedProgress = completedCount / TOTAL_ONBOARDING_STEPS;
+  return Math.min(1, Math.max(stepProgress, completedProgress));
+};
 
 const initialState = {
   currentStep: 0,
@@ -37,13 +42,19 @@ const onboardingSlice = createSlice({
         0,
         Math.min(MAX_STEP_INDEX, action.payload)
       );
-      state.progress = state.currentStep / STEP_PROGRESS_DENOMINATOR;
+      state.progress = calculateProgress(
+        state.currentStep,
+        state.completedSteps.length
+      );
     },
     markStepComplete: (state, action) => {
       if (!state.completedSteps.includes(action.payload)) {
         state.completedSteps.push(action.payload);
       }
-      state.progress = state.completedSteps.length / TOTAL_ONBOARDING_STEPS;
+      state.progress = calculateProgress(
+        state.currentStep,
+        state.completedSteps.length
+      );
     }
   },
   extraReducers: (builder) => {

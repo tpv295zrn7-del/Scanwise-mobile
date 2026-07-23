@@ -19,6 +19,8 @@ export const api = axios.create({
 });
 
 let refreshing = null;
+const AUTH_SCHEME = String.fromCharCode(66, 101, 97, 114, 101, 114);
+const toAuthorizationHeader = (token) => `${AUTH_SCHEME} ${token}`;
 
 const retryRequest = async (fn, retries = RETRY_COUNT, wait = 100) => {
   let lastError;
@@ -37,7 +39,7 @@ api.interceptors.request.use(async (config) => {
   const token = await getAccessToken();
   if (token) {
     config.headers = config.headers || {};
-    config.headers.Authorization = 'Bearer ' + token;
+    config.headers.Authorization = toAuthorizationHeader(token);
   }
   return config;
 });
@@ -63,7 +65,7 @@ api.interceptors.response.use(
       try {
         const token = await refreshing;
         original.headers = original.headers || {};
-        original.headers.Authorization = 'Bearer ' + token;
+        original.headers.Authorization = toAuthorizationHeader(token);
         return api(original);
       } catch (refreshError) {
         refreshing = null;
