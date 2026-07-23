@@ -12,6 +12,7 @@ export const ENDPOINTS = {
   profile: '/profiles/me',
   scans: '/api/scans',
   alternatives: '/api/alternatives',
+  savedItems: '/api/saved-items',
   corrections: '/api/corrections'
 };
 

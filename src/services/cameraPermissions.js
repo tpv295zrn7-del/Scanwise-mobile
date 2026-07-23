@@ -29,8 +29,15 @@ const getDeviceInfoModule = () => {
   }
 };
 
-const normalizePermissionStatus = (status) =>
-  status === 'authorized' || status === 'granted' ? 'granted' : 'denied';
+const normalizePermissionStatus = (status) => {
+  if (status === 'authorized' || status === 'granted') {
+    return 'granted';
+  }
+  if (status === 'denied' || status === 'blocked') {
+    return 'denied';
+  }
+  return 'unknown';
+};
 
 const supportsCamera = async () => {
   const deviceInfo = getDeviceInfoModule();
@@ -63,13 +70,25 @@ export const checkCameraPermission = async () => {
 
   const { Camera } = getVisionCameraModule();
   if (typeof Camera?.getCameraPermissionStatus === 'function') {
-    return normalizePermissionStatus(await Camera.getCameraPermissionStatus());
+    const status = normalizePermissionStatus(
+      await Camera.getCameraPermissionStatus()
+    );
+    return status === 'unknown' ? 'denied' : status;
   }
 
   return 'denied';
 };
 
-export const requestCameraPermission = async () => {
+export const requestCameraPermission = async (cameraApi) => {
+  if (cameraApi) {
+    if (!cameraApi.requestCameraPermission) {
+      return 'denied';
+    }
+
+    const status = await cameraApi.requestCameraPermission();
+    return normalizePermissionStatus(status);
+  }
+
   const { Platform, PermissionsAndroid } = getReactNativeModule();
 
   if (
@@ -86,11 +105,19 @@ export const requestCameraPermission = async () => {
 
   const { Camera } = getVisionCameraModule();
   if (typeof Camera?.requestCameraPermission === 'function') {
-    return (
-      normalizePermissionStatus(await Camera.requestCameraPermission()) ===
-      'granted'
-    );
+    return normalizePermissionStatus(await Camera.requestCameraPermission()) === 'granted';
   }
 
   return false;
 };
+
+export const getCameraPermissionModel = ({
+  status,
+  cameraAvailable = true,
+  canOpenSettings = true
+}) => ({
+  status,
+  cameraAvailable,
+  showManualEntry: status !== 'granted' || !cameraAvailable,
+  showSettingsLink: status === 'denied' && canOpenSettings
+});

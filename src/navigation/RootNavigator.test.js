@@ -34,6 +34,15 @@ test('route guards and linking', () => {
   expect(linking.config.screens.PasswordReset).toBe('reset-password');
 });
 
+
+test('camera permissions return immediately when already granted', async () => {
+  const permissions = require('../services/cameraPermissions');
+  permissions.checkCameraPermission.mockResolvedValueOnce('granted');
+
+  await expect(ensureCameraPermission()).resolves.toBe('granted');
+  expect(permissions.requestCameraPermission).not.toHaveBeenCalled();
+});
+
 test('camera permissions are requested on startup when missing', async () => {
   await expect(ensureCameraPermission()).resolves.toBe('granted');
 });
