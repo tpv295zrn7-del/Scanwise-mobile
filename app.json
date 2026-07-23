@@ -20,7 +20,7 @@
       "deploymentTarget": "13.0",
       "usesNonExemptEncryption": false,
       "infoPlist": {
-        "NSCameraUsageDescription": "ScanWise needs camera access to scan product barcodes.",
+        "NSCameraUsageDescription": "ScanWise uses your camera to scan product barcodes.",
         "NSPhotoLibraryUsageDescription": "ScanWise needs access to your photo library to scan barcodes from images.",
         "NSPhotoLibraryAddUsageDescription": "ScanWise needs access to save scan results to your photo library."
       }

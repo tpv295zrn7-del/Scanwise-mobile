@@ -9,6 +9,11 @@ test('complete scan flow navigates to product result', async () => {
 
   const screen = ScanScreen({
     scanBarcode,
+    detectBarcodes: jest.fn().mockResolvedValue({
+      success: true,
+      barcode: '009988',
+      confidence: 'verified'
+    }),
     requestCameraPermission: jest.fn().mockResolvedValue('granted'),
     navigation,
     onHaptic
