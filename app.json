@@ -13,13 +13,26 @@
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": ["**/*"],
-    "ios": { "supportsTablet": true },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.scanwise.mobile",
+      "buildNumber": "1",
+      "deploymentTarget": "13.0",
+      "usesNonExemptEncryption": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "ScanWise needs camera access to scan product barcodes.",
+        "NSPhotoLibraryUsageDescription": "ScanWise needs access to your photo library to scan barcodes from images.",
+        "NSPhotoLibraryAddUsageDescription": "ScanWise needs access to save scan results to your photo library."
+      }
+    },
     "android": {
+      "package": "com.scanwise.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/app-icon.png",
         "backgroundColor": "#10B981"
       },
-      "permissions": ["CAMERA"]
+      "permissions": ["CAMERA", "INTERNET", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
     }
   }
 }

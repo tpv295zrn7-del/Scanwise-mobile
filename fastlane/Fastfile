@@ -1,0 +1,78 @@
+default_platform(:ios)
+
+# ──────────────────────────────────────────────
+# iOS
+# ──────────────────────────────────────────────
+platform :ios do
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    build_app(
+      workspace: "ios/Scanwise.xcworkspace",
+      scheme: "Scanwise",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: ENV["APPLE_TEAM_ID"]
+      }
+    )
+    upload_to_testflight(
+      api_key_path: "fastlane/AuthKey_#{ENV['APPLE_KEY_ID']}.p8",
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Build and submit directly to App Store"
+  lane :release do
+    build_app(
+      workspace: "ios/Scanwise.xcworkspace",
+      scheme: "Scanwise",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: ENV["APPLE_TEAM_ID"]
+      }
+    )
+    upload_to_app_store(
+      api_key_path: "fastlane/AuthKey_#{ENV['APPLE_KEY_ID']}.p8",
+      skip_metadata: false,
+      skip_screenshots: false,
+      submit_for_review: false,
+      automatic_release: false
+    )
+  end
+end
+
+# ──────────────────────────────────────────────
+# Android
+# ──────────────────────────────────────────────
+platform :android do
+  desc "Build and upload to Play Store internal testing"
+  lane :beta do
+    gradle(
+      task: "assembleRelease",
+      project_dir: "android/",
+      properties: {
+        "KEYSTORE_PASS" => ENV["KEYSTORE_PASS"],
+        "KEY_ALIAS"     => ENV["KEY_ALIAS"],
+        "KEY_PASS"      => ENV["KEY_PASS"]
+      }
+    )
+    upload_to_play_store(
+      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      track: "internal",
+      rollout: 1.0
+    )
+  end
+
+  desc "Promote internal build to production"
+  lane :release do
+    upload_to_play_store(
+      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      track: "internal",
+      track_promote_to: "production",
+      rollout: 0.1
+    )
+  end
+end
