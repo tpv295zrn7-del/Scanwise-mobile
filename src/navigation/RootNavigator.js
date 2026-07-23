@@ -1,5 +1,9 @@
 import { selectCurrentUser } from '../redux/slices/authSlice';
 import { selectOnboardingProgress } from '../redux/slices/onboardingSlice';
+import {
+  checkCameraPermission,
+  requestCameraPermission
+} from '../services/cameraPermissions';
 
 export const linking = {
   prefixes: ['scanwise://'],
@@ -27,6 +31,15 @@ export const resolveRouteGroup = (state) => {
   if (!user) return 'AuthStack';
   if (progress < 1) return 'OnboardingStack';
   return 'AppStack';
+};
+
+export const ensureCameraPermission = async () => {
+  const permission = await checkCameraPermission();
+  if (permission === 'granted') {
+    return 'granted';
+  }
+
+  return (await requestCameraPermission()) ? 'granted' : 'denied';
 };
 
 export const RootNavigator = (state) => resolveRouteGroup(state);

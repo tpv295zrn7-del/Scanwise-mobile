@@ -98,5 +98,10 @@ export const endpoints = {
   resetPassword: (data) =>
     safeCall(() => api.post(ENDPOINTS.resetPassword, data)),
   getProfile: () => safeCall(() => api.get(ENDPOINTS.profile)),
-  updateProfile: (data) => safeCall(() => api.put(ENDPOINTS.profile, data))
+  updateProfile: (data) => safeCall(() => api.put(ENDPOINTS.profile, data)),
+  scanProduct: (data) => safeCall(() => api.post(ENDPOINTS.scans, data)),
+  getAlternatives: (barcode) =>
+    safeCall(() => api.get(ENDPOINTS.alternatives, { params: { barcode } })),
+  submitCorrection: (data) =>
+    safeCall(() => api.post(ENDPOINTS.corrections, data))
 };

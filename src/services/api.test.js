@@ -86,6 +86,9 @@ describe('api service', () => {
     await endpoints.resetPassword({ token: 't', password: 'Aa!23456' });
     await endpoints.getProfile();
     await endpoints.updateProfile({ goals: [] });
+    await endpoints.scanProduct({ barcode: '0123456789012' });
+    await endpoints.getAlternatives('0123456789012');
+    await endpoints.submitCorrection({ barcode: '0123456789012' });
 
     expect(axios.__instance.post).toHaveBeenCalled();
     expect(axios.__instance.get).toHaveBeenCalled();

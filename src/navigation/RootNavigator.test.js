@@ -2,9 +2,15 @@ import {
   AuthStack,
   OnboardingStack,
   AppTabs,
+  ensureCameraPermission,
   resolveRouteGroup,
   linking
 } from './RootNavigator';
+
+jest.mock('../services/cameraPermissions', () => ({
+  checkCameraPermission: jest.fn(() => Promise.resolve('denied')),
+  requestCameraPermission: jest.fn(() => Promise.resolve(true))
+}));
 
 test('route guards and linking', () => {
   expect(AuthStack).toContain('Login');
@@ -26,4 +32,14 @@ test('route guards and linking', () => {
     })
   ).toBe('AppStack');
   expect(linking.config.screens.PasswordReset).toBe('reset-password');
+});
+
+test('camera permissions are requested on startup when missing', async () => {
+  await expect(ensureCameraPermission()).resolves.toBe('granted');
+});
+
+test('camera permissions stay denied when request is rejected', async () => {
+  const permissions = require('../services/cameraPermissions');
+  permissions.requestCameraPermission.mockResolvedValueOnce(false);
+  await expect(ensureCameraPermission()).resolves.toBe('denied');
 });

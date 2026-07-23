@@ -34,10 +34,7 @@ const onboardingSlice = createSlice({
   initialState,
   reducers: {
     setCurrentStep: (state, action) => {
-      state.currentStep = Math.max(
-        0,
-        Math.min(MAX_STEP_INDEX, action.payload)
-      );
+      state.currentStep = Math.max(0, Math.min(MAX_STEP_INDEX, action.payload));
       state.progress = calculateProgress(state.completedSteps.length);
     },
     markStepComplete: (state, action) => {
