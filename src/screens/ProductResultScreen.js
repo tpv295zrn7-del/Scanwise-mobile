@@ -72,12 +72,19 @@ export const ProductResultScreen = ({
     saveIcon,
     compareIcon,
     correctIcon,
-    productName: activeScan.name || 'Unknown Product',
-    brand: activeScan.brand || 'Unknown Brand',
-    barcode: activeScan.barcode || null,
+    get productName() {
+      return activeScan.name || 'Unknown Product';
+    },
+    get brand() {
+      return activeScan.brand || 'Unknown Brand';
+    },
+    get barcode() {
+      return activeScan.barcode || null;
+    },
     confidence: resolvedConfidence,
-    nutritionInfo:
-      activeScan.nutritionInfo || 'Nutrition information coming soon.',
+    get nutritionInfo() {
+      return activeScan.nutritionInfo || 'Nutrition information coming soon.';
+    },
     saveButton: FormButton({
       title: saved ? 'Unsave' : 'Save',
       leftIcon: saveIcon

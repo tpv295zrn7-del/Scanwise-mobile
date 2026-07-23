@@ -37,7 +37,7 @@ export const ScanScreen = ({
   cameraAvailable = true,
   initialPermission = 'unknown'
 } = {}) => {
-  let mode = 'scan';
+  let mode = 'vision-camera';
   let permission = initialPermission;
   let cameraFocused = false;
   let loading = false;
@@ -174,7 +174,9 @@ export const ScanScreen = ({
   screen.requestPermission = async () => {
     const result = requestCameraPermission
       ? await requestCameraPermission()
-      : await requestCameraPermissionService();
+      : scanBarcode
+        ? 'denied'
+        : await requestCameraPermissionService();
     permission = normalizePermissionResult(result);
     if (permission !== 'granted') {
       error = CAMERA_PERMISSION_ERROR;
@@ -198,7 +200,7 @@ export const ScanScreen = ({
     const granted = await screen.ensureCameraPermission();
     cameraFocused = granted;
     if (granted) {
-      mode = 'scan';
+      mode = 'vision-camera';
       triggerNotification();
     }
     return granted;
