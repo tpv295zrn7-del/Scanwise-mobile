@@ -6,6 +6,13 @@ import { FamilyMemberCard } from './FamilyMemberCard';
 import { ProfileReviewCard } from './ProfileReviewCard';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { GoalIcon } from './GoalIcon';
+import { ScanOverlay } from './ScanOverlay';
+import { CancelButton } from './CancelButton';
+import { triggerNotification } from '../services/haptic';
+
+jest.mock('../services/haptic', () => ({
+  triggerNotification: jest.fn()
+}));
 
 test('components render payloads', () => {
   expect(FormInput({ value: 'abc', maxLength: 10 }).props.characterCount).toBe(
@@ -28,4 +35,11 @@ test('components render payloads', () => {
       .props.allergenCount
   ).toBe(0);
   expect(GoalIcon({ goal: 'protein' }).props.size).toBe(24);
+  expect(ScanOverlay().instructionText).toBe('Align barcode within frame');
+  const onCancel = jest.fn();
+  CancelButton({ onPress: onCancel }).onPress();
+  expect(triggerNotification).toHaveBeenCalled();
+  expect(onCancel).toHaveBeenCalled();
+  CancelButton().onPress();
+  expect(triggerNotification).toHaveBeenCalledTimes(2);
 });

@@ -52,3 +52,9 @@ test('camera permissions stay denied when request is rejected', async () => {
   permissions.requestCameraPermission.mockResolvedValueOnce(false);
   await expect(ensureCameraPermission()).resolves.toBe('denied');
 });
+
+test('camera permissions preserve unknown request status', async () => {
+  const permissions = require('../services/cameraPermissions');
+  permissions.requestCameraPermission.mockResolvedValueOnce('unknown');
+  await expect(ensureCameraPermission()).resolves.toBe('unknown');
+});

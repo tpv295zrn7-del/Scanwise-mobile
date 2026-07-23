@@ -70,10 +70,7 @@ export const checkCameraPermission = async () => {
 
   const { Camera } = getVisionCameraModule();
   if (typeof Camera?.getCameraPermissionStatus === 'function') {
-    const status = normalizePermissionStatus(
-      await Camera.getCameraPermissionStatus()
-    );
-    return status === 'unknown' ? 'denied' : status;
+    return normalizePermissionStatus(await Camera.getCameraPermissionStatus());
   }
 
   return 'denied';
