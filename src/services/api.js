@@ -19,7 +19,7 @@ export const api = axios.create({
 });
 
 let refreshing = null;
-const AUTH_SCHEME = String.fromCharCode(66, 101, 97, 114, 101, 114);
+const AUTH_SCHEME = 'Bearer';
 const toAuthorizationHeader = (token) => `${AUTH_SCHEME} ${token}`;
 
 const retryRequest = async (fn, retries = RETRY_COUNT, wait = 100) => {
