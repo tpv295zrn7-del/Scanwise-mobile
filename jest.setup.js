@@ -23,6 +23,7 @@ jest.mock('axios', () => {
   instance.post = jest.fn();
   instance.get = jest.fn();
   instance.put = jest.fn();
+  instance.delete = jest.fn();
 
   return {
     create: jest.fn(() => instance),

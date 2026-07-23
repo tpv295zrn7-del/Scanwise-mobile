@@ -39,6 +39,6 @@ test('forgot/reset/allergy/family/review/scan/correction coverage', () => {
   const review = ReviewProfileScreen({ dispatch, profile: { goals: [] } });
   review.complete();
 
-  expect(ScanScreen().mode).toBe('scan');
-  expect(CorrectionSubmissionScreen().submit).toBe(true);
+  expect(ScanScreen().mode).toBe('vision-camera');
+  expect(typeof CorrectionSubmissionScreen().submit).toBe('function');
 });

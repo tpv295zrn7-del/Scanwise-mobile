@@ -98,5 +98,14 @@ export const endpoints = {
   resetPassword: (data) =>
     safeCall(() => api.post(ENDPOINTS.resetPassword, data)),
   getProfile: () => safeCall(() => api.get(ENDPOINTS.profile)),
-  updateProfile: (data) => safeCall(() => api.put(ENDPOINTS.profile, data))
+  updateProfile: (data) => safeCall(() => api.put(ENDPOINTS.profile, data)),
+  scanBarcode: (data) => safeCall(() => api.post(ENDPOINTS.scans, data)),
+  getAlternatives: (barcode) =>
+    safeCall(() => api.get(`${ENDPOINTS.alternatives}?barcode=${barcode}`)),
+  addSavedItem: (data) => safeCall(() => api.post(ENDPOINTS.savedItems, data)),
+  removeSavedItem: (id) =>
+    safeCall(() => api.delete(`${ENDPOINTS.savedItems}/${id}`)),
+  getSavedItems: () => safeCall(() => api.get(ENDPOINTS.savedItems)),
+  submitCorrection: (data) =>
+    safeCall(() => api.post(ENDPOINTS.corrections, data))
 };

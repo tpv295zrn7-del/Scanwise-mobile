@@ -77,6 +77,7 @@ describe('api service', () => {
     axios.__instance.post.mockResolvedValue({ data: {} });
     axios.__instance.get.mockResolvedValue({ data: {} });
     axios.__instance.put.mockResolvedValue({ data: {} });
+    axios.__instance.delete.mockResolvedValue({ data: {} });
 
     await endpoints.login({ email: 'a@b.com', password: 'Aa!23456' });
     await endpoints.signup({ email: 'b@c.com', password: 'Aa!23456' });
@@ -86,10 +87,17 @@ describe('api service', () => {
     await endpoints.resetPassword({ token: 't', password: 'Aa!23456' });
     await endpoints.getProfile();
     await endpoints.updateProfile({ goals: [] });
+    await endpoints.scanBarcode({ barcode: '123' });
+    await endpoints.getAlternatives('123');
+    await endpoints.addSavedItem({ id: 's1' });
+    await endpoints.removeSavedItem('s1');
+    await endpoints.getSavedItems();
+    await endpoints.submitCorrection({ barcode: '123', reason: 'Other' });
 
     expect(axios.__instance.post).toHaveBeenCalled();
     expect(axios.__instance.get).toHaveBeenCalled();
     expect(axios.__instance.put).toHaveBeenCalled();
+    expect(axios.__instance.delete).toHaveBeenCalled();
   });
 
   test('retry and mapped network error', async () => {

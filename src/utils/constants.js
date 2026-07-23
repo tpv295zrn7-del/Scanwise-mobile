@@ -9,7 +9,11 @@ export const ENDPOINTS = {
   refresh: '/auth/refresh',
   forgotPassword: '/auth/forgot-password',
   resetPassword: '/auth/reset-password',
-  profile: '/profiles/me'
+  profile: '/profiles/me',
+  scans: '/api/scans',
+  alternatives: '/api/alternatives',
+  savedItems: '/api/saved-items',
+  corrections: '/api/corrections'
 };
 
 export const COLORS = {
