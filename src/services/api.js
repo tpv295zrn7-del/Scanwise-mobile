@@ -37,7 +37,7 @@ api.interceptors.request.use(async (config) => {
   const token = await getAccessToken();
   if (token) {
     config.headers = config.headers || {};
-    config.headers.Authorization = ['Bearer', token].join(' ');
+    config.headers.Authorization = 'Bearer ' + token;
   }
   return config;
 });
@@ -63,7 +63,7 @@ api.interceptors.response.use(
       try {
         const token = await refreshing;
         original.headers = original.headers || {};
-        original.headers.Authorization = ['Bearer', token].join(' ');
+        original.headers.Authorization = 'Bearer ' + token;
         return api(original);
       } catch (refreshError) {
         refreshing = null;

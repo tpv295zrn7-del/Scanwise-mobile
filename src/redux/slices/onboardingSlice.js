@@ -4,6 +4,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 const STORAGE_KEY = 'scanwise_onboarding';
 const TOTAL_ONBOARDING_STEPS = 5;
 const MAX_STEP_INDEX = TOTAL_ONBOARDING_STEPS - 1;
+const STEP_PROGRESS_DENOMINATOR = Math.max(1, MAX_STEP_INDEX);
 
 const initialState = {
   currentStep: 0,
@@ -36,7 +37,7 @@ const onboardingSlice = createSlice({
         0,
         Math.min(MAX_STEP_INDEX, action.payload)
       );
-      state.progress = state.currentStep / MAX_STEP_INDEX;
+      state.progress = state.currentStep / STEP_PROGRESS_DENOMINATOR;
     },
     markStepComplete: (state, action) => {
       if (!state.completedSteps.includes(action.payload)) {
