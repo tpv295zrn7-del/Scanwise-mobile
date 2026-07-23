@@ -166,7 +166,7 @@ export const ScanScreen = ({
     }),
     cameraView: {
       library: 'react-native-vision-camera',
-      scanner: '@react-native-ml-kit/barcode-scanning',
+      scanner: '@react-native-ml-kit/barcode-scanning', // npm package used for ML Kit barcode detection
       frameProcessorHook: 'useFrameProcessor'
     },
     get mode() {
