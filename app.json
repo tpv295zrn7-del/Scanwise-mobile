@@ -13,7 +13,12 @@
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": ["**/*"],
-    "ios": { "supportsTablet": true },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "ScanWise uses your camera to scan product barcodes."
+      }
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/app-icon.png",

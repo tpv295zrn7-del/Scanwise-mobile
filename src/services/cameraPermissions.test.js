@@ -81,6 +81,22 @@ describe('cameraPermissions service', () => {
     await expect(checkCameraPermission()).resolves.toBe('denied');
   });
 
+  test('checkCameraPermission preserves unknown status from vision camera', async () => {
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'ios' },
+      PermissionsAndroid: {}
+    }));
+    jest.doMock('react-native-device-info', () => ({}));
+    jest.doMock('react-native-vision-camera', () => ({
+      Camera: {
+        getCameraPermissionStatus: jest.fn(() => Promise.resolve('limited'))
+      }
+    }));
+
+    const { checkCameraPermission } = loadModule();
+    await expect(checkCameraPermission()).resolves.toBe('unknown');
+  });
+
   test('requestCameraPermission uses Android permissions result', async () => {
     const request = jest.fn(() => Promise.resolve('granted'));
 

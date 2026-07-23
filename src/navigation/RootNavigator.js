@@ -39,7 +39,15 @@ export const ensureCameraPermission = async () => {
     return 'granted';
   }
 
-  return (await requestCameraPermission()) ? 'granted' : 'denied';
+  const requestedPermission = await requestCameraPermission();
+  if (requestedPermission === true || requestedPermission === 'granted') {
+    return 'granted';
+  }
+  if (requestedPermission === 'unknown') {
+    return 'unknown';
+  }
+
+  return 'denied';
 };
 
 export const RootNavigator = (state) => resolveRouteGroup(state);

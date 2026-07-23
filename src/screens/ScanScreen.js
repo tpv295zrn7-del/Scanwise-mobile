@@ -1,9 +1,11 @@
 import { scanProductByBarcode } from '../redux/thunks/scanThunk';
-import { createBarcodeDetector } from '../services/barcodeDetection';
+import { CancelButton } from '../components/CancelButton';
+import { ScanOverlay } from '../components/ScanOverlay';
 import {
   checkCameraPermission,
   requestCameraPermission as requestCameraPermissionService
 } from '../services/cameraPermissions';
+import { detectBarcodesInFrame } from '../services/mlKitBarcode';
 import {
   triggerError,
   triggerNotification,
@@ -12,8 +14,10 @@ import {
 
 const CAMERA_PERMISSION_ERROR =
   'Camera permission is required to scan products.';
+const CAMERA_UNAVAILABLE_ERROR = 'Camera not available.';
 const MANUAL_ENTRY_ERROR = 'Enter a barcode to continue.';
 const DEFAULT_SCAN_ERROR = 'Unable to scan product. Please try again.';
+const SCANNING_FAILED_ERROR = 'Scanning failed. Please try again.';
 
 const isSuccessfulScan = (action) =>
   Boolean(action) &&
@@ -30,12 +34,14 @@ const getDetectedValue = (value) => {
 export const ScanScreen = ({
   dispatch = async (action) => action,
   scanBarcode,
+  detectBarcodes = detectBarcodesInFrame,
   requestCameraPermission,
   onHaptic,
   onError,
   navigation,
   cameraAvailable = true,
-  initialPermission = 'unknown'
+  initialPermission = 'unknown',
+  now = Date.now
 } = {}) => {
   let mode = 'vision-camera';
   let permission = initialPermission;
@@ -44,11 +50,11 @@ export const ScanScreen = ({
   let error = null;
   let manualEntry = '';
   let detectedBarcode = null;
+  let detectedConfidence = null;
   let lastBarcode = null;
+  let lastDetectionAt = 0;
   let currentScan = null;
   let scanning = true;
-
-  const detector = createBarcodeDetector();
 
   const normalizePermissionResult = (value) => {
     if (value === 'granted' || value === true) {
@@ -60,7 +66,7 @@ export const ScanScreen = ({
     return 'denied';
   };
 
-  const submitScan = async (value) => {
+  const submitScan = async (value, detection = {}) => {
     if (loading || !scanning) {
       return null;
     }
@@ -86,7 +92,23 @@ export const ScanScreen = ({
     try {
       if (scanBarcode) {
         const response = await scanBarcode(barcode);
-        currentScan = response?.data || response;
+        const responseData = response?.data || response;
+        if (responseData && typeof responseData === 'object') {
+          currentScan = {
+            ...responseData,
+            barcode: responseData.barcode || barcode,
+            confidence:
+              detection.confidence || responseData.confidence || 'estimated'
+          };
+          if (detection.format || detection.boundingBox) {
+            currentScan.detection = {
+              format: detection.format,
+              boundingBox: detection.boundingBox
+            };
+          }
+        } else {
+          currentScan = responseData;
+        }
         scanning = false;
         navigation?.navigate?.('ProductResultScreen', {
           barcode,
@@ -102,7 +124,18 @@ export const ScanScreen = ({
         return null;
       }
 
-      currentScan = action.payload || action;
+      const payload = action.payload || action;
+      currentScan = {
+        ...payload,
+        barcode,
+        confidence: detection.confidence || payload?.confidence || 'estimated'
+      };
+      if (detection.format || detection.boundingBox) {
+        currentScan.detection = {
+          format: detection.format,
+          boundingBox: detection.boundingBox
+        };
+      }
       scanning = false;
       navigation?.navigate?.('ProductResult', { scanResult: currentScan });
       return currentScan;
@@ -127,9 +160,14 @@ export const ScanScreen = ({
     instructionText: 'Align barcode within frame',
     manualEntryEnabled: true,
     cameraAvailable,
+    scanOverlay: ScanOverlay({ text: 'Align barcode within frame' }),
+    cancelButtonModel: CancelButton({
+      onPress: () => navigation?.goBack?.()
+    }),
     cameraView: {
       library: 'react-native-vision-camera',
-      scanner: 'vision-camera-code-scanner'
+      scanner: '@react-native-ml-kit/barcode-scanning',
+      frameProcessorHook: 'useFrameProcessor'
     },
     get mode() {
       return mode;
@@ -154,6 +192,9 @@ export const ScanScreen = ({
     },
     get detectedBarcode() {
       return detectedBarcode;
+    },
+    get detectedConfidence() {
+      return detectedConfidence;
     },
     get lastBarcode() {
       return lastBarcode;
@@ -221,7 +262,8 @@ export const ScanScreen = ({
     error = null;
     loading = false;
     scanning = true;
-    detector.reset();
+    lastDetectionAt = 0;
+    detectedConfidence = null;
     return true;
   };
 
@@ -231,12 +273,30 @@ export const ScanScreen = ({
     screen.submitBarcode(getDetectedValue(value));
 
   screen.processFrame = async (frame) => {
-    const barcode = detector.processFrame(frame);
-    if (!barcode) {
+    if (!cameraAvailable) {
+      error = CAMERA_UNAVAILABLE_ERROR;
+      return null;
+    }
+    if (!scanning || loading) {
       return null;
     }
 
-    return screen.submitBarcode(barcode);
+    const currentTime = now();
+    if (currentTime - lastDetectionAt < 1000) {
+      return null;
+    }
+    lastDetectionAt = currentTime;
+
+    const detection = await detectBarcodes(frame);
+    if (!detection?.success || !detection?.barcode) {
+      if (detection?.reason === 'detection_error') {
+        error = SCANNING_FAILED_ERROR;
+      }
+      return null;
+    }
+
+    detectedConfidence = detection.confidence || 'estimated';
+    return screen.submitBarcode(detection.barcode, detection);
   };
 
   screen.submitManualEntry = async (barcode) =>
