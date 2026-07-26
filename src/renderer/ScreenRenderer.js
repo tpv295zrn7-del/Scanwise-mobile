@@ -8,9 +8,11 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { ComponentRenderer } from './ComponentRenderer';
 import { ScanView as ScanViewComponent } from '../components/ScanView';
 import { fetchProductByBarcode } from '../services/productApi';
+import { saveScan, selectSavedScans, selectIsScanSaved } from '../redux/slices/scansSlice';
 import { COLORS } from '../utils/constants';
 
 const nutriscoreColors = {
@@ -258,12 +260,14 @@ const ScanView = ({ descriptor }) => {
 
 // ── Product Result ─────────────────────────────────────────────
 const ProductResultView = ({ descriptor }) => {
+  const dispatch = useDispatch();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
   const needsLookup = descriptor.searching && descriptor.barcode;
+  const isSaved = useSelector(selectIsScanSaved(descriptor.barcode));
 
   useEffect(() => {
     if (!needsLookup) return;
@@ -279,6 +283,17 @@ const ProductResultView = ({ descriptor }) => {
         if (data) {
           setProduct(data);
           setNotFound(false);
+          // Auto-save the scan to Redux
+          dispatch(
+            saveScan({
+              barcode: descriptor.barcode,
+              productName: data.name,
+              brand: data.brand,
+              image: data.image,
+              nutriscore: data.nutriscore,
+              category: data.categories,
+            })
+          );
         } else {
           setNotFound(true);
           setProduct(null);
@@ -295,7 +310,7 @@ const ProductResultView = ({ descriptor }) => {
     return () => {
       cancelled = true;
     };
-  }, [descriptor.barcode, needsLookup]);
+  }, [descriptor.barcode, needsLookup, dispatch]);
 
   // ── Not searching — descriptor already has product data ────────
   if (!needsLookup) {
@@ -336,9 +351,22 @@ const ProductResultView = ({ descriptor }) => {
           <FieldRow label="Categories" value={descriptor.categories} />
         ) : null}
         <FieldRow label="Confidence" value={descriptor.confidence} />
-        {descriptor.saveButton && (
-          <ComponentRenderer descriptor={descriptor.saveButton} />
-        )}
+        <SaveButton
+          isSaved={isSaved}
+          onSave={() =>
+            dispatch(
+              saveScan({
+                barcode: descriptor.barcode,
+                productName: descriptor.productName,
+                brand: descriptor.brand,
+                image: descriptor.image,
+                nutriscore: descriptor.nutriscore,
+                category: descriptor.categories,
+              })
+            )
+          }
+          saveIcon={descriptor.saveIcon}
+        />
         {descriptor.compareButton && (
           <ComponentRenderer descriptor={descriptor.compareButton} />
         )}
@@ -448,9 +476,22 @@ const ProductResultView = ({ descriptor }) => {
           <FieldRow label="Categories" value={descriptor.categories} />
         ) : null}
         <FieldRow label="Confidence" value={descriptor.confidence} />
-        {descriptor.saveButton && (
-          <ComponentRenderer descriptor={descriptor.saveButton} />
-        )}
+        <SaveButton
+          isSaved={isSaved}
+          onSave={() =>
+            dispatch(
+              saveScan({
+                barcode: descriptor.barcode,
+                productName: product.name,
+                brand: product.brand,
+                image: product.image,
+                nutriscore: product.nutriscore,
+                category: product.categories,
+              })
+            )
+          }
+          saveIcon={descriptor.saveIcon}
+        />
         {descriptor.compareButton && (
           <ComponentRenderer descriptor={descriptor.compareButton} />
         )}
@@ -472,22 +513,40 @@ const ProductResultView = ({ descriptor }) => {
 };
 
 // ── Saved Items ────────────────────────────────────────────────
-const SavedItemsView = ({ descriptor }) => (
-  <ScrollView contentContainerStyle={styles.screen}>
-    <Text style={styles.screenTitle}>Saved Items</Text>
-    {descriptor.empty ? (
-      <Text style={styles.emptyText}>{descriptor.emptyStateText}</Text>
-    ) : (
-      descriptor.items.map((item) => (
-        <View key={item.id} style={styles.card}>
-          <Text style={styles.cardTitle}>{item.name || 'Unknown'}</Text>
-          <Text style={styles.cardSubtitle}>{item.brand || ''}</Text>
-          <Text style={styles.cardMeta}>Confidence: {item.confidence}</Text>
-        </View>
-      ))
-    )}
-  </ScrollView>
-);
+const SavedItemsView = ({ descriptor }) => {
+  const savedScans = useSelector(selectSavedScans);
+
+  return (
+    <ScrollView contentContainerStyle={styles.screen}>
+      <Text style={styles.screenTitle}>Saved Items</Text>
+      {savedScans.length === 0 ? (
+        <Text style={styles.emptyText}>No saved items yet</Text>
+      ) : (
+        savedScans.map((item) => (
+          <View key={item.barcode} style={styles.savedItemCard}>
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.savedItemThumb}
+                resizeMode="contain"
+              />
+            ) : null}
+            <View style={styles.savedItemInfo}>
+              <Text style={styles.cardTitle}>
+                {item.productName || 'Unknown'}
+              </Text>
+              <Text style={styles.cardSubtitle}>{item.brand || ''}</Text>
+              <Text style={styles.cardMeta}>Barcode: {item.barcode}</Text>
+              <Text style={styles.cardMeta}>
+                Saved: {new Date(item.timestamp).toLocaleDateString()}
+              </Text>
+            </View>
+          </View>
+        ))
+      )}
+    </ScrollView>
+  );
+};
 
 // ── Health Goals ───────────────────────────────────────────────
 const HealthGoalsView = ({ descriptor }) => (
@@ -596,6 +655,30 @@ const GenericView = ({ descriptor, screenName }) => {
         <FieldRow key={key} label={key} value={String(value)} />
       ))}
     </ScrollView>
+  );
+};
+
+// ── Save Button (Redux-aware) ──────────────────────────────────
+const SaveButton = ({ isSaved, onSave, saveIcon }) => {
+  if (isSaved) {
+    return (
+      <View style={styles.saveButtonSaved}>
+        <Text style={styles.saveButtonSavedText}>Saved ✓</Text>
+      </View>
+    );
+  }
+
+  return (
+    <TouchableOpacity style={styles.saveButton} onPress={onSave}>
+      {saveIcon && (
+        <Image
+          source={saveIcon}
+          style={styles.saveButtonIcon}
+          resizeMode="contain"
+        />
+      )}
+      <Text style={styles.saveButtonText}>Save</Text>
+    </TouchableOpacity>
   );
 };
 
@@ -818,5 +901,59 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     marginTop: 12,
     textAlign: 'center',
+  },
+  // Save button (Redux-aware)
+  saveButton: {
+    backgroundColor: COLORS.primary,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  saveButtonIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
+  },
+  saveButtonSaved: {
+    backgroundColor: '#D1FAE5',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  saveButtonSavedText: {
+    color: '#065F46',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  // Saved Items list
+  savedItemCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  savedItemThumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: '#F3F4F6',
+  },
+  savedItemInfo: {
+    flex: 1,
   },
 });
