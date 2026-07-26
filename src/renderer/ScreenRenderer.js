@@ -133,7 +133,10 @@ const SignupView = ({ descriptor }) => (
 const HomeView = ({ descriptor }) => (
   <ScrollView contentContainerStyle={styles.screen}>
     <Text style={styles.screenTitle}>{descriptor.greeting}</Text>
-    <TouchableOpacity style={styles.primaryButton}>
+    <TouchableOpacity 
+      style={styles.primaryButton}
+      onPress={descriptor.onScanPress || (() => {})}
+    >
       <Text style={styles.primaryButtonText}>{descriptor.scanButton}</Text>
     </TouchableOpacity>
     {descriptor.recentScans && descriptor.recentScans.length > 0 && (
