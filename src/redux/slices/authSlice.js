@@ -107,15 +107,30 @@ const authSlice = createSlice({
   }
 });
 
-export const selectAuthState = (state) => state.auth;
-export const selectCurrentUser = (state) => state.auth.user;
-export const selectTokens = (state) => ({
-  accessToken: state.auth.accessToken,
-  refreshToken: state.auth.refreshToken
-});
-export const selectLockoutState = (state) => ({
-  failedAttempts: state.auth.failedAttempts,
-  isLocked: state.auth.isLocked
-});
+export const selectAuthState = (state) => {
+  // Defensive selector: handle both full state and partial state
+  return (state && state.auth) || state || initialState;
+};
+
+export const selectCurrentUser = (state) => {
+  const authState = selectAuthState(state);
+  return (authState && authState.user) || null;
+};
+
+export const selectTokens = (state) => {
+  const authState = selectAuthState(state);
+  return {
+    accessToken: (authState && authState.accessToken) || null,
+    refreshToken: (authState && authState.refreshToken) || null
+  };
+};
+
+export const selectLockoutState = (state) => {
+  const authState = selectAuthState(state);
+  return {
+    failedAttempts: (authState && authState.failedAttempts) || 0,
+    isLocked: (authState && authState.isLocked) || false
+  };
+};
 
 export default authSlice.reducer;
