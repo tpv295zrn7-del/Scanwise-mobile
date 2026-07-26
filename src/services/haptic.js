@@ -1,19 +1,14 @@
-const getHapticModule = () => {
-  try {
-    const module = require('react-native-haptic-feedback');
-    return module.default || module;
-  } catch (_error) {
-    return { trigger: () => undefined };
-  }
-};
+// Haptic feedback disabled for Expo Go compatibility.
+// react-native-haptic-feedback requires a native module (RNHapticFeedback)
+// not available in Expo Go. All functions are no-ops to prevent crashes.
+
+const noop = () => undefined;
 
 export const HAPTIC_OPTIONS = {
   enableVibrateFallback: true,
   ignoreAndroidSystemSettings: false
 };
 
-const trigger = (type) => getHapticModule().trigger(type, HAPTIC_OPTIONS);
-
-export const triggerSuccess = () => trigger('notificationSuccess');
-export const triggerError = () => trigger('notificationError');
-export const triggerNotification = () => trigger('impactLight');
+export const triggerSuccess = noop;
+export const triggerError = noop;
+export const triggerNotification = noop;

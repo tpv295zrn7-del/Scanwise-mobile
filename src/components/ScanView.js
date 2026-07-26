@@ -6,7 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { CameraView, requestCameraPermissionsAsync } from 'expo-camera';
+import { CameraView, Camera } from 'expo-camera';
 import { COLORS } from '../utils/constants';
 
 /**
@@ -63,7 +63,7 @@ export const ScanView = ({
     }
 
     // Fallback: try expo-camera's own permission API
-    const { status } = await requestCameraPermissionsAsync();
+    const { status } = await Camera.requestCameraPermissionsAsync();
     setPermission(status);
   }, [onRequestPermission]);
 
