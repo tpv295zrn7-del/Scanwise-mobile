@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { endpoints } from '../../services/api';
+import { fetchProductByBarcode } from '../../services/productApi';
 
 export const normalizeScanConfidence = (value) => {
   const normalized = `${value || ''}`.toLowerCase();
@@ -29,5 +30,16 @@ export const scanProductByBarcode = createAsyncThunk(
         response.data?.confidence || response.data?.status
       )
     };
+  }
+);
+
+export const lookupProductByBarcode = createAsyncThunk(
+  'scans/lookupProductByBarcode',
+  async (barcode) => {
+    const product = await fetchProductByBarcode(barcode);
+    if (!product) {
+      throw new Error('PRODUCT_NOT_FOUND');
+    }
+    return { barcode, ...product };
   }
 );

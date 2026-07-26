@@ -34,7 +34,11 @@ describe('scansSlice', () => {
       currentScan: null,
       scanHistory: [],
       loading: false,
-      error: null
+      error: null,
+      productLoading: false,
+      productData: null,
+      productError: null,
+      productNotFound: false,
     });
   });
 
