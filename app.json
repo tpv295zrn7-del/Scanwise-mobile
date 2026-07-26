@@ -13,6 +13,14 @@
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": ["**/*"],
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ScanWise uses your camera to scan product barcodes."
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.scanwise.mobile",
