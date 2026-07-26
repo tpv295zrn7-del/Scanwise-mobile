@@ -39,6 +39,13 @@ export const ProductResultScreen = ({
 } = {}) => {
   const initialProduct = currentScan || scanResult || product || {};
   const resolvedConfidence = initialProduct.confidence || confidence;
+
+  // Determine if we're still searching (barcode scanned but no product name yet)
+  const isSearching =
+    initialProduct.barcode &&
+    (!initialProduct.name || initialProduct.name === 'Unknown Product') &&
+    (!initialProduct.brand || initialProduct.brand === 'Unknown Brand');
+
   const saveIcon = require('../assets/icon-save.png');
   const compareIcon = require('../assets/icon-compare.png');
   const correctIcon = require('../assets/icon-correct.png');
@@ -115,6 +122,12 @@ export const ProductResultScreen = ({
     },
     get currentScan() {
       return activeScan;
+    },
+    get searching() {
+      return isSearching;
+    },
+    get isSearching() {
+      return isSearching;
     },
     toggleComparison() {
       comparisonVisible = !comparisonVisible;

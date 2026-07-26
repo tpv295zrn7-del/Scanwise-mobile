@@ -63,12 +63,16 @@ const AppNavigator = () => {
   const [screenStack, setScreenStack] = useState([
     INITIAL_SCREENS[routeGroup] || 'Home',
   ]);
+  const [routeParams, setRouteParams] = useState({});
 
   const currentScreen = screenStack[screenStack.length - 1];
 
   const navigation = {
-    navigate: (name) => {
+    navigate: (name, params) => {
       setScreenStack((prev) => [...prev, name]);
+      if (params) {
+        setRouteParams((prev) => ({ ...prev, [name]: params }));
+      }
     },
     goBack: () => {
       setScreenStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
@@ -100,6 +104,7 @@ const AppNavigator = () => {
     recentScans: state?.scans?.items || [],
     familyMembers: state?.healthProfiles?.familyMembers || [],
     progress,
+    ...(routeParams[currentScreen] || {}),
   });
 
   return <ScreenRenderer descriptor={descriptor} screenName={currentScreen} />;

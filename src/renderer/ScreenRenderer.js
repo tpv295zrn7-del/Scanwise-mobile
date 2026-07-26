@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ComponentRenderer } from './ComponentRenderer';
+import { ScanView as ScanViewComponent } from '../components/ScanView';
 import { COLORS } from '../utils/constants';
 
 /**
@@ -159,35 +160,93 @@ const HomeView = ({ descriptor }) => (
 );
 
 // ── Scan ───────────────────────────────────────────────────────
-const ScanView = ({ descriptor }) => (
-  <View style={styles.screen}>
-    <Text style={styles.screenTitle}>Scan Product</Text>
-    <Text style={styles.label}>{descriptor.instructionText}</Text>
-    {descriptor.scanOverlay && (
-      <ComponentRenderer descriptor={descriptor.scanOverlay} />
-    )}
-    <View style={styles.buttonRow}>
-      {descriptor.cancelButtonModel && (
-        <ComponentRenderer descriptor={descriptor.cancelButtonModel} />
-      )}
+const ScanView = ({ descriptor }) => {
+  // If no camera view props are present, fall back to the simple UI
+  if (!descriptor.onBarcodeDetected && !descriptor.handleBarcodeDetected) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.screenTitle}>Scan Product</Text>
+        <Text style={styles.label}>{descriptor.instructionText}</Text>
+        {descriptor.scanOverlay && (
+          <ComponentRenderer descriptor={descriptor.scanOverlay} />
+        )}
+        <View style={styles.buttonRow}>
+          {descriptor.cancelButtonModel && (
+            <ComponentRenderer descriptor={descriptor.cancelButtonModel} />
+          )}
+        </View>
+        {descriptor.error && (
+          <Text style={styles.error}>{descriptor.error}</Text>
+        )}
+      </View>
+    );
+  }
+
+  // Real camera view — pass descriptor callbacks as props
+  return (
+    <View style={styles.scanContainer}>
+      {/* Error banner above camera */}
+      {descriptor.error ? (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorBannerText}>{descriptor.error}</Text>
+          {typeof descriptor.retry === 'function' && (
+            <TouchableOpacity onPress={() => descriptor.retry()}>
+              <Text style={styles.retryLink}>Retry</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : null}
+
+      <ScanViewComponent
+        onBarcodeDetected={
+          descriptor.handleBarcodeDetected || descriptor.onBarcodeDetected
+        }
+        scanning={descriptor.scanning}
+        cameraPermission={descriptor.permission || descriptor.cameraPermission}
+        onRequestPermission={
+          descriptor.requestPermission || descriptor.ensureCameraPermission
+            ? async () => {
+                const result = descriptor.ensureCameraPermission
+                  ? await descriptor.ensureCameraPermission()
+                  : await descriptor.requestPermission();
+                return result ? 'granted' : 'denied';
+              }
+            : undefined
+        }
+        instructionText={descriptor.instructionText}
+        onCancel={
+          descriptor.cancelButtonModel?.onPress
+            ? descriptor.cancelButtonModel.onPress
+            : undefined
+        }
+      />
     </View>
-    {descriptor.error && (
-      <Text style={styles.error}>{descriptor.error}</Text>
-    )}
-  </View>
-);
+  );
+};
 
 // ── Product Result ─────────────────────────────────────────────
 const ProductResultView = ({ descriptor }) => (
   <ScrollView contentContainerStyle={styles.screen}>
-    <Text style={styles.screenTitle}>{descriptor.productName || 'Product'}</Text>
-    {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
-    <FieldRow label="Brand" value={descriptor.brand} />
-    <FieldRow label="Barcode" value={descriptor.barcode} />
-    <FieldRow label="Confidence" value={descriptor.confidence} />
-    {descriptor.saveButton && <ComponentRenderer descriptor={descriptor.saveButton} />}
-    {descriptor.compareButton && (
-      <ComponentRenderer descriptor={descriptor.compareButton} />
+    {descriptor.searching || descriptor.isSearching ? (
+      <View style={styles.searchingContainer}>
+        <Text style={styles.screenTitle}>Product Found</Text>
+        <FieldRow label="Barcode" value={descriptor.barcode} />
+        <View style={styles.searchingContainer}>
+          <Text style={styles.searchingText}>Searching for product info...</Text>
+        </View>
+      </View>
+    ) : (
+      <>
+        <Text style={styles.screenTitle}>{descriptor.productName || 'Product'}</Text>
+        {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
+        <FieldRow label="Brand" value={descriptor.brand} />
+        <FieldRow label="Barcode" value={descriptor.barcode} />
+        <FieldRow label="Confidence" value={descriptor.confidence} />
+        {descriptor.saveButton && <ComponentRenderer descriptor={descriptor.saveButton} />}
+        {descriptor.compareButton && (
+          <ComponentRenderer descriptor={descriptor.compareButton} />
+        )}
+      </>
     )}
   </ScrollView>
 );
@@ -455,5 +514,37 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     maxWidth: '60%',
     textAlign: 'right',
+  },
+  // Scan screen camera view
+  scanContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  errorBanner: {
+    backgroundColor: '#FEE2E2',
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  errorBannerText: {
+    color: '#991B1B',
+    fontSize: 14,
+    flex: 1,
+  },
+  retryLink: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    marginLeft: 12,
+  },
+  // Searching state for ProductResult
+  searchingContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  searchingText: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginTop: 12,
   },
 });
