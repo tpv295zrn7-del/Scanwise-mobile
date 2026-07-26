@@ -13,6 +13,7 @@ import { ComponentRenderer } from './ComponentRenderer';
 import { ScanView as ScanViewComponent } from '../components/ScanView';
 import { fetchProductByBarcode } from '../services/productApi';
 import { saveScan, selectSavedScans, selectIsScanSaved } from '../redux/slices/scansSlice';
+import { saveItem } from '../redux/slices/savedItemsSlice';
 import { COLORS } from '../utils/constants';
 
 const nutriscoreColors = {
@@ -283,7 +284,7 @@ const ProductResultView = ({ descriptor }) => {
         if (data) {
           setProduct(data);
           setNotFound(false);
-          // Auto-save the scan to Redux
+          // Auto-save the scan to Redux (both slices)
           dispatch(
             saveScan({
               barcode: descriptor.barcode,
@@ -292,6 +293,17 @@ const ProductResultView = ({ descriptor }) => {
               image: data.image,
               nutriscore: data.nutriscore,
               category: data.categories,
+            })
+          );
+          dispatch(
+            saveItem({
+              barcode: descriptor.barcode,
+              productName: data.name,
+              brand: data.brand,
+              image: data.image,
+              nutriscore: data.nutriscore,
+              category: data.categories,
+              timestamp: new Date().toISOString(),
             })
           );
         } else {
@@ -353,7 +365,7 @@ const ProductResultView = ({ descriptor }) => {
         <FieldRow label="Confidence" value={descriptor.confidence} />
         <SaveButton
           isSaved={isSaved}
-          onSave={() =>
+          onSave={() => {
             dispatch(
               saveScan({
                 barcode: descriptor.barcode,
@@ -363,8 +375,19 @@ const ProductResultView = ({ descriptor }) => {
                 nutriscore: descriptor.nutriscore,
                 category: descriptor.categories,
               })
-            )
-          }
+            );
+            dispatch(
+              saveItem({
+                barcode: descriptor.barcode,
+                productName: descriptor.productName,
+                brand: descriptor.brand,
+                image: descriptor.image,
+                nutriscore: descriptor.nutriscore,
+                category: descriptor.categories,
+                timestamp: new Date().toISOString(),
+              })
+            );
+          }}
           saveIcon={descriptor.saveIcon}
         />
         {descriptor.compareButton && (
@@ -478,7 +501,7 @@ const ProductResultView = ({ descriptor }) => {
         <FieldRow label="Confidence" value={descriptor.confidence} />
         <SaveButton
           isSaved={isSaved}
-          onSave={() =>
+          onSave={() => {
             dispatch(
               saveScan({
                 barcode: descriptor.barcode,
@@ -488,8 +511,19 @@ const ProductResultView = ({ descriptor }) => {
                 nutriscore: product.nutriscore,
                 category: product.categories,
               })
-            )
-          }
+            );
+            dispatch(
+              saveItem({
+                barcode: descriptor.barcode,
+                productName: product.name,
+                brand: product.brand,
+                image: product.image,
+                nutriscore: product.nutriscore,
+                category: product.categories,
+                timestamp: new Date().toISOString(),
+              })
+            );
+          }}
           saveIcon={descriptor.saveIcon}
         />
         {descriptor.compareButton && (
@@ -515,31 +549,48 @@ const ProductResultView = ({ descriptor }) => {
 // ── Saved Items ────────────────────────────────────────────────
 const SavedItemsView = ({ descriptor }) => {
   const savedScans = useSelector(selectSavedScans);
+  // Prefer descriptor items (from savedItemsSlice via factory),
+  // fall back to scansSlice if descriptor is empty
+  const items =
+    descriptor.items && descriptor.items.length > 0
+      ? descriptor.items
+      : savedScans;
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Text style={styles.screenTitle}>Saved Items</Text>
-      {savedScans.length === 0 ? (
+      {items.length === 0 ? (
         <Text style={styles.emptyText}>No saved items yet</Text>
       ) : (
-        savedScans.map((item) => (
-          <View key={item.barcode} style={styles.savedItemCard}>
+        items.map((item) => (
+          <View key={item.barcode || item.id} style={styles.savedItemCard}>
             {item.image ? (
               <Image
-                source={{ uri: item.image }}
+                source={
+                  typeof item.image === 'string'
+                    ? { uri: item.image }
+                    : item.image
+                }
                 style={styles.savedItemThumb}
                 resizeMode="contain"
               />
             ) : null}
             <View style={styles.savedItemInfo}>
               <Text style={styles.cardTitle}>
-                {item.productName || 'Unknown'}
+                {item.name || item.productName || 'Unknown'}
               </Text>
               <Text style={styles.cardSubtitle}>{item.brand || ''}</Text>
-              <Text style={styles.cardMeta}>Barcode: {item.barcode}</Text>
               <Text style={styles.cardMeta}>
-                Saved: {new Date(item.timestamp).toLocaleDateString()}
+                Barcode: {item.barcode || item.id}
               </Text>
+              {(item.lastScannedDate || item.timestamp) && (
+                <Text style={styles.cardMeta}>
+                  Saved:{' '}
+                  {new Date(
+                    item.lastScannedDate || item.timestamp
+                  ).toLocaleDateString()}
+                </Text>
+              )}
             </View>
           </View>
         ))

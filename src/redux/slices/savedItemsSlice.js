@@ -57,6 +57,24 @@ const savedItemsSlice = createSlice({
         state.items.push(action.payload);
       }
     },
+    saveItem: (state, action) => {
+      const { barcode, productName, brand, image, nutriscore, category, timestamp } =
+        action.payload;
+      const id = barcode;
+      const exists = state.items.some((item) => item.id === id);
+      if (!exists) {
+        state.items.push({
+          id,
+          barcode,
+          name: productName || 'Unknown Product',
+          brand: brand || 'Unknown Brand',
+          image: image || null,
+          nutriscore: nutriscore || null,
+          category: category || '',
+          lastScannedDate: timestamp || new Date().toISOString(),
+        });
+      }
+    },
     removeItem: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
@@ -111,7 +129,7 @@ const savedItemsSlice = createSlice({
   }
 });
 
-export const { addItem, removeItem, setSavedItems, clearError } =
+export const { addItem, saveItem, removeItem, setSavedItems, clearError } =
   savedItemsSlice.actions;
 
 export const selectSavedItems = (state) => state.savedItems.items;

@@ -1,5 +1,6 @@
 import { ConfidenceBadge } from '../components/ConfidenceBadge';
 import { FormButton } from '../components/FormButton';
+import { saveItem } from '../redux/slices/savedItemsSlice';
 
 const scoreGoalMatch = (goal = '', comparison = {}) => {
   if (goal === 'low_sugar') return comparison.sugarDelta < 0;
@@ -24,6 +25,7 @@ const compareNutrition = (original = {}, alternative = {}) => {
 };
 
 export const ProductResultScreen = ({
+  dispatch,
   scanResult,
   product,
   confidence = 'verified',
@@ -168,6 +170,19 @@ export const ProductResultScreen = ({
     },
     toggleSave() {
       saved = !saved;
+      if (dispatch) {
+        dispatch(
+          saveItem({
+            barcode: activeScan.barcode || activeScan.id,
+            productName: activeScan.name || 'Unknown Product',
+            brand: activeScan.brand || 'Unknown Brand',
+            image: activeScan.image || null,
+            nutriscore: activeScan.nutriscore || null,
+            category: activeScan.categories || '',
+            timestamp: new Date().toISOString(),
+          })
+        );
+      }
       if (onHaptic) {
         onHaptic('impactMedium');
       }
