@@ -1,6 +1,5 @@
 import { ConfidenceBadge } from '../components/ConfidenceBadge';
 import { FormButton } from '../components/FormButton';
-import { lookupProductByBarcode } from '../redux/thunks/scanThunk';
 
 const scoreGoalMatch = (goal = '', comparison = {}) => {
   if (goal === 'low_sugar') return comparison.sugarDelta < 0;
@@ -25,8 +24,6 @@ const compareNutrition = (original = {}, alternative = {}) => {
 };
 
 export const ProductResultScreen = ({
-  dispatch,
-  state = {},
   scanResult,
   product,
   confidence = 'verified',
@@ -43,42 +40,16 @@ export const ProductResultScreen = ({
   const initialProduct = currentScan || scanResult || product || {};
   const resolvedConfidence = initialProduct.confidence || confidence;
 
-  // ── Product lookup from Redux state ──────────────────────────────
-  const scansState = state.scans || {};
-  const productLoading = scansState.productLoading;
-  const productData = scansState.productData;
-  const productError = scansState.productError;
-  const productNotFound = scansState.productNotFound;
-
+  // ── Determine display states ─────────────────────────────────────
+  // The renderer (ProductResultView) will handle the API fetch via useEffect.
+  // We just flag whether a lookup is needed so the renderer can show a spinner.
   const hasBarcode = !!initialProduct.barcode;
   const hasNoProductData =
     !initialProduct.name || initialProduct.name === 'Unknown Product';
-
-  // Determine whether we need to trigger an Open Food Facts lookup
-  const needsLookup =
-    hasBarcode &&
-    hasNoProductData &&
-    !productLoading &&
-    !productData &&
-    !productError &&
-    !productNotFound &&
-    typeof dispatch === 'function';
-
-  // Trigger the lookup via dispatch (guarded by needsLookup to prevent repeats)
-  if (needsLookup) {
-    dispatch(lookupProductByBarcode(initialProduct.barcode));
-  }
+  const isSearching = hasBarcode && hasNoProductData;
 
   // ── Resolve active product data ──────────────────────────────────
-  // If we have product data from the API, use it; otherwise fall back to initial
-  const activeProduct = productData
-    ? { ...initialProduct, ...productData, confidence: resolvedConfidence }
-    : initialProduct;
-
-  // ── Display states ───────────────────────────────────────────────
-  const lookupError = productError && !productNotFound;
-  const isSearching =
-    productLoading || (hasBarcode && hasNoProductData && !productError && !productNotFound);
+  const activeProduct = initialProduct;
 
   const saveIcon = require('../assets/icon-save.png');
   const compareIcon = require('../assets/icon-compare.png');
@@ -175,18 +146,6 @@ export const ProductResultScreen = ({
     },
     get isSearching() {
       return isSearching;
-    },
-    get loading() {
-      return productLoading;
-    },
-    get lookupError() {
-      return lookupError;
-    },
-    get notFound() {
-      return productNotFound;
-    },
-    get errorMessage() {
-      return productError || null;
     },
     toggleComparison() {
       comparisonVisible = !comparisonVisible;
