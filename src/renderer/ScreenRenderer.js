@@ -139,6 +139,18 @@ const HomeView = ({ descriptor }) => (
     >
       <Text style={styles.primaryButtonText}>{descriptor.scanButton}</Text>
     </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.secondaryButton}
+      onPress={descriptor.onSavedPress || (() => {})}
+    >
+      <Text style={styles.secondaryButtonText}>Saved Items</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={styles.secondaryButton}
+      onPress={descriptor.onProfilePress || (() => {})}
+    >
+      <Text style={styles.secondaryButtonText}>Profile</Text>
+    </TouchableOpacity>
     {descriptor.recentScans && descriptor.recentScans.length > 0 && (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Recent Scans</Text>
@@ -469,6 +481,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
+  },
+  secondaryButton: {
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 4,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  secondaryButtonText: {
+    color: '#374151',
+    fontWeight: '500',
+    fontSize: 15,
   },
   linkButton: {
     padding: 10,
