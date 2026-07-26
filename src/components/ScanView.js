@@ -6,7 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { CameraView } from 'expo-camera';
 import { COLORS } from '../utils/constants';
 
 /**
@@ -63,7 +63,7 @@ export const ScanView = ({
     }
 
     // Fallback: try expo-camera's own permission API
-    const { status } = await Camera.requestCameraPermissionsAsync();
+    const { status } = await CameraView.requestCameraPermissionsAsync();
     setPermission(status);
   }, [onRequestPermission]);
 
@@ -99,13 +99,13 @@ export const ScanView = ({
   // ── Camera view with barcode overlay ──────────────────────────
   return (
     <View style={styles.container}>
-      <Camera
+      <CameraView
         ref={CameraRef}
         style={styles.camera}
-        type={Camera.Constants?.Type?.back ?? 'back'}
+        facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         barcodeScannerSettings={{
-          barCodeTypes: [
+          barcodeTypes: [
             'ean13', 'ean8', 'upc_a', 'upc_e', 'code128',
             'code39', 'code93', 'itf14', 'qr', 'pdf417',
             'aztec', 'datamatrix',
@@ -143,7 +143,7 @@ export const ScanView = ({
             <Text style={styles.scannedText}>Barcode detected!</Text>
           </View>
         )}
-      </Camera>
+      </CameraView>
     </View>
   );
 };
