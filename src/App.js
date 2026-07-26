@@ -56,13 +56,9 @@ const INITIAL_SCREENS = {
  * function signatures.
  */
 const AppNavigator = () => {
-  // Select only the state slices needed for route resolution
-  const state = useSelector((s) => ({
-    auth: s.auth,
-    onboarding: s.onboarding,
-    healthProfiles: s.healthProfiles,
-    scans: s.scans,
-  }));
+  // Select the full Redux state — don't create a partial object
+  // Selectors expect the full state shape
+  const state = useSelector((s) => s);
   const dispatch = useDispatch();
 
   const routeGroup = resolveRouteGroup(state);
