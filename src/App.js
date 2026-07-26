@@ -1,38 +1,127 @@
-import React from 'react';
-import { Provider } from 'react-redux';
+import React, { useState } from 'react';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
 import { store } from './redux/store';
+import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
+import { ScreenRenderer } from './renderer/ScreenRenderer';
+import { selectCurrentUser } from './redux/slices/authSlice';
+import { selectOnboardingProgress } from './redux/slices/onboardingSlice';
+
+// Screen factories — each returns a plain descriptor object
+import { HomeScreen } from './screens/HomeScreen';
+import { LoginScreen } from './screens/LoginScreen';
+import { SignupScreen } from './screens/SignupScreen';
+import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
+import { PasswordResetScreen } from './screens/PasswordResetScreen';
+import { OnboardingWelcomeScreen } from './screens/OnboardingWelcomeScreen';
+import { HealthGoalsScreen } from './screens/HealthGoalsScreen';
+import { AllergySetupScreen } from './screens/AllergySetupScreen';
+import { FamilyProfilesScreen } from './screens/FamilyProfilesScreen';
+import { ReviewProfileScreen } from './screens/ReviewProfileScreen';
+import { ScanScreen } from './screens/ScanScreen';
+import { ProductResultScreen } from './screens/ProductResultScreen';
+import { SavedItemsScreen } from './screens/SavedItemsScreen';
+import { ComparisonScreen } from './screens/ComparisonScreen';
+import { CorrectionSubmissionScreen } from './screens/CorrectionSubmissionScreen';
+
+// Map screen names to factories
+const SCREEN_FACTORIES = {
+  Home: HomeScreen,
+  Login: LoginScreen,
+  Signup: SignupScreen,
+  ForgotPassword: ForgotPasswordScreen,
+  PasswordReset: PasswordResetScreen,
+  OnboardingWelcome: OnboardingWelcomeScreen,
+  HealthGoals: HealthGoalsScreen,
+  AllergySetup: AllergySetupScreen,
+  FamilyProfiles: FamilyProfilesScreen,
+  ReviewProfile: ReviewProfileScreen,
+  Scan: ScanScreen,
+  ProductResult: ProductResultScreen,
+  Saved: SavedItemsScreen,
+  Comparison: ComparisonScreen,
+  CorrectionSubmission: CorrectionSubmissionScreen,
+};
+
+// Initial screen per route group
+const INITIAL_SCREENS = {
+  AuthStack: 'Login',
+  OnboardingStack: 'OnboardingWelcome',
+  AppStack: 'Home',
+};
+
+/**
+ * Simple in-app navigation: tracks the current screen name,
+ * provides a navigate/goBack API compatible with the factory
+ * function signatures.
+ */
+const AppNavigator = () => {
+  const state = useSelector((s) => s);
+  const dispatch = useDispatch();
+
+  const routeGroup = resolveRouteGroup(state);
+  const [screenStack, setScreenStack] = useState([
+    INITIAL_SCREENS[routeGroup] || 'Home',
+  ]);
+
+  const currentScreen = screenStack[screenStack.length - 1];
+
+  const navigation = {
+    navigate: (name) => {
+      setScreenStack((prev) => [...prev, name]);
+    },
+    goBack: () => {
+      setScreenStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+    },
+  };
+
+  const factory = SCREEN_FACTORIES[currentScreen];
+
+  if (!factory) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.fallbackText}>
+          Screen not found: {currentScreen}
+        </Text>
+      </View>
+    );
+  }
+
+  // Build dependencies for the factory.
+  // Each factory destructures only what it needs from this object.
+  const user = selectCurrentUser(state);
+  const progress = selectOnboardingProgress(state);
+
+  const descriptor = factory({
+    dispatch,
+    navigation,
+    state,
+    user,
+    recentScans: state?.scans?.items || [],
+    familyMembers: state?.healthProfiles?.familyMembers || [],
+    progress,
+  });
+
+  return <ScreenRenderer descriptor={descriptor} screenName={currentScreen} />;
+};
 
 const styles = StyleSheet.create({
-  container: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    padding: 24,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#10B981',
-  },
-  subtitle: {
+  fallbackText: {
     fontSize: 16,
-    color: '#6b7280',
-    marginTop: 8,
+    color: '#6B7280',
   },
 });
-
-const AppContent = () => (
-  <View style={styles.container}>
-    <Text style={styles.title}>ScanWise</Text>
-    <Text style={styles.subtitle}>Mobile Scanning App</Text>
-  </View>
-);
 
 export default function App() {
   return (
     <Provider store={store}>
-      <AppContent />
+      <AppNavigator />
     </Provider>
   );
 }
