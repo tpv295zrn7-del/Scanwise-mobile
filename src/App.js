@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Provider, useSelector, useDispatch, shallowEqual } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
 import { store } from './redux/store';
 import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
@@ -56,17 +56,14 @@ const INITIAL_SCREENS = {
  * function signatures.
  */
 const AppNavigator = () => {
-  // Select only the state slices needed for route resolution
-  // shallowEqual prevents infinite re-renders from new object literals
-  const state = useSelector((s) => ({
-    auth: s.auth,
-    onboarding: s.onboarding,
-    healthProfiles: s.healthProfiles,
-    scans: s.scans,
-  }), shallowEqual);
+  const auth = useSelector((s) => s.auth);
+  const onboarding = useSelector((s) => s.onboarding);
+  const healthProfiles = useSelector((s) => s.healthProfiles);
+  const scans = useSelector((s) => s.scans);
   const dispatch = useDispatch();
 
-  const routeGroup = resolveRouteGroup(state);
+  const fullState = store.getState();
+  const routeGroup = resolveRouteGroup(fullState);
   const [screenStack, setScreenStack] = useState([
     INITIAL_SCREENS[routeGroup] || 'Home',
   ]);
@@ -100,16 +97,16 @@ const AppNavigator = () => {
 
   // Build dependencies for the factory.
   // Each factory destructures only what it needs from this object.
-  const user = selectCurrentUser(state);
-  const progress = selectOnboardingProgress(state);
+  const user = selectCurrentUser(fullState);
+  const progress = selectOnboardingProgress(fullState);
 
   const descriptor = factory({
     dispatch,
     navigation,
-    state,
+    state: fullState,
     user,
-    recentScans: state?.scans?.items || [],
-    familyMembers: state?.healthProfiles?.familyMembers || [],
+    recentScans: scans?.items || [],
+    familyMembers: healthProfiles?.familyMembers || [],
     progress,
     ...(routeParams[currentScreen] || {}),
   });
