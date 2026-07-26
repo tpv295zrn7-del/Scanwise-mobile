@@ -26,8 +26,13 @@ export const OnboardingStack = [
 export const AppTabs = ['Scan', 'Saved', 'Profile'];
 
 export const resolveRouteGroup = (state) => {
-  const user = selectCurrentUser(state);
-  const progress = selectOnboardingProgress(state);
+  // Extract the full Redux state from the selector state
+  // state can be either the full Redux state or a partial object
+  const fullState = state.auth ? state : { auth: state };
+  
+  const user = selectCurrentUser(fullState);
+  const progress = selectOnboardingProgress(fullState);
+  
   if (!user) return 'AuthStack';
   if (progress < 1) return 'OnboardingStack';
   return 'AppStack';
