@@ -324,6 +324,34 @@ const ProductResultView = ({ descriptor }) => {
     };
   }, [descriptor.barcode, needsLookup, dispatch]);
 
+  // Auto-save whenever product data exists, regardless of source
+  // (direct scan data or API fetch result)
+  useEffect(() => {
+    if (descriptor.productName && descriptor.barcode) {
+      dispatch(
+        saveScan({
+          barcode: descriptor.barcode,
+          productName: descriptor.productName,
+          brand: descriptor.brand,
+          image: descriptor.image,
+          nutriscore: descriptor.nutriscore,
+          category: descriptor.categories,
+        })
+      );
+      dispatch(
+        saveItem({
+          barcode: descriptor.barcode,
+          productName: descriptor.productName,
+          brand: descriptor.brand,
+          image: descriptor.image,
+          nutriscore: descriptor.nutriscore,
+          category: descriptor.categories,
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
+  }, [descriptor.productName, descriptor.barcode, dispatch]);
+
   // ── Not searching — descriptor already has product data ────────
   if (!needsLookup) {
     return (
