@@ -4,6 +4,7 @@ import { scanProductByBarcode, lookupProductByBarcode } from '../thunks/scanThun
 const initialState = {
   currentScan: null,
   scanHistory: [],
+  savedScans: [],
   loading: false,
   error: null,
   productLoading: false,
@@ -32,6 +33,22 @@ const scansSlice = createSlice({
       state.productData = null;
       state.productError = null;
       state.productNotFound = false;
+    },
+    saveScan: (state, action) => {
+      const { barcode, productName, brand, image, nutriscore, category } =
+        action.payload;
+      const exists = state.savedScans.some((s) => s.barcode === barcode);
+      if (!exists) {
+        state.savedScans.unshift({
+          barcode,
+          productName: productName || 'Unknown Product',
+          brand: brand || 'Unknown Brand',
+          image: image || null,
+          nutriscore: nutriscore || null,
+          category: category || '',
+          timestamp: new Date().toISOString(),
+        });
+      }
     },
   },
   extraReducers: (builder) => {
@@ -69,12 +86,15 @@ const scansSlice = createSlice({
   },
 });
 
-export const { setCurrentScan, addToHistory, clearError, clearProductLookup } =
+export const { setCurrentScan, addToHistory, clearError, clearProductLookup, saveScan } =
   scansSlice.actions;
 
 export const selectScansState = (state) => state.scans;
 export const selectCurrentScan = (state) => state.scans.currentScan;
 export const selectScanHistory = (state) => state.scans.scanHistory;
+export const selectSavedScans = (state) => state.scans.savedScans;
+export const selectIsScanSaved = (barcode) => (state) =>
+  state.scans.savedScans.some((s) => s.barcode === barcode);
 export const selectScansLoading = (state) => state.scans.loading;
 export const selectScansError = (state) => state.scans.error;
 export const selectProductLoading = (state) => state.scans.productLoading;

@@ -2,8 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import reducer, {
   addToHistory,
   clearError,
+  saveScan,
   selectCurrentScan,
   selectScanHistory,
+  selectSavedScans,
+  selectIsScanSaved,
   selectScansError,
   selectScansLoading,
   setCurrentScan
@@ -33,6 +36,7 @@ describe('scansSlice', () => {
     expect(store.getState().scans).toEqual({
       currentScan: null,
       scanHistory: [],
+      savedScans: [],
       loading: false,
       error: null,
       productLoading: false,
@@ -88,5 +92,41 @@ describe('scansSlice', () => {
     expect(normalizeScanConfidence('partial')).toBe('estimated');
     expect(normalizeScanConfidence('found')).toBe('verified');
     expect(normalizeScanConfidence('unknown')).toBe('incomplete');
+  });
+
+  test('saveScan adds to savedScans and selectSavedScans / selectIsScanSaved work', () => {
+    const store = createStore();
+    const scan = {
+      barcode: '123456789',
+      productName: 'Test Product',
+      brand: 'Test Brand',
+      image: 'https://example.com/img.jpg',
+      nutriscore: 'a',
+      category: 'Snacks',
+    };
+
+    store.dispatch(saveScan(scan));
+
+    const saved = selectSavedScans(store.getState());
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({
+      barcode: '123456789',
+      productName: 'Test Product',
+      brand: 'Test Brand',
+      image: 'https://example.com/img.jpg',
+      nutriscore: 'a',
+      category: 'Snacks',
+    });
+    expect(saved[0].timestamp).toBeDefined();
+    expect(selectIsScanSaved('123456789')(store.getState())).toBe(true);
+    expect(selectIsScanSaved('999999999')(store.getState())).toBe(false);
+  });
+
+  test('saveScan does not duplicate the same barcode', () => {
+    const store = createStore();
+    store.dispatch(saveScan({ barcode: '111', productName: 'First' }));
+    store.dispatch(saveScan({ barcode: '111', productName: 'Second' }));
+    expect(selectSavedScans(store.getState())).toHaveLength(1);
+    expect(selectSavedScans(store.getState())[0].productName).toBe('First');
   });
 });
