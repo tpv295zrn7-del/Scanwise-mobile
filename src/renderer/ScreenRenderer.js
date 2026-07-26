@@ -1,8 +1,24 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
 import { ComponentRenderer } from './ComponentRenderer';
 import { ScanView as ScanViewComponent } from '../components/ScanView';
 import { COLORS } from '../utils/constants';
+
+const nutriscoreColors = {
+  a: '#038141',
+  b: '#85BB2F',
+  c: '#FECB02',
+  d: '#EE8200',
+  e: '#E63E11',
+};
 
 /**
  * Maps a screen factory descriptor object to React Native views.
@@ -240,31 +256,110 @@ const ScanView = ({ descriptor }) => {
 };
 
 // ── Product Result ─────────────────────────────────────────────
-const ProductResultView = ({ descriptor }) => (
-  <ScrollView contentContainerStyle={styles.screen}>
-    {descriptor.searching || descriptor.isSearching ? (
-      <View style={styles.searchingContainer}>
+const ProductResultView = ({ descriptor }) => {
+  // Loading state: API call is in flight
+  if (descriptor.loading) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.screenTitle}>Product Lookup</Text>
+        <FieldRow label="Barcode" value={descriptor.barcode} />
+        <View style={styles.searchingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.searchingText}>Looking up product...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Not found state: product not in Open Food Facts database
+  if (descriptor.notFound) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.screenTitle}>Product Not Found</Text>
+        <FieldRow label="Barcode" value={descriptor.barcode} />
+        <View style={styles.searchingContainer}>
+          <Text style={styles.notFoundText}>
+            Product not found in database
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Error state: API call failed
+  if (descriptor.lookupError) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.screenTitle}>Lookup Error</Text>
+        <FieldRow label="Barcode" value={descriptor.barcode} />
+        <View style={styles.searchingContainer}>
+          <Text style={styles.errorText}>Could not look up product</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Searching state: barcode scanned but no API call started yet
+  if (descriptor.searching || descriptor.isSearching) {
+    return (
+      <View style={styles.centered}>
         <Text style={styles.screenTitle}>Product Found</Text>
         <FieldRow label="Barcode" value={descriptor.barcode} />
         <View style={styles.searchingContainer}>
-          <Text style={styles.searchingText}>Searching for product info...</Text>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.searchingText}>Looking up product...</Text>
         </View>
       </View>
-    ) : (
-      <>
-        <Text style={styles.screenTitle}>{descriptor.productName || 'Product'}</Text>
-        {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
-        <FieldRow label="Brand" value={descriptor.brand} />
-        <FieldRow label="Barcode" value={descriptor.barcode} />
-        <FieldRow label="Confidence" value={descriptor.confidence} />
-        {descriptor.saveButton && <ComponentRenderer descriptor={descriptor.saveButton} />}
-        {descriptor.compareButton && (
-          <ComponentRenderer descriptor={descriptor.compareButton} />
-        )}
-      </>
-    )}
-  </ScrollView>
-);
+    );
+  }
+
+  // Success state: product data available
+  return (
+    <ScrollView contentContainerStyle={styles.screen}>
+      <Text style={styles.screenTitle}>
+        {descriptor.productName || 'Product'}
+      </Text>
+      {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
+      {descriptor.image ? (
+        <Image
+          source={{ uri: descriptor.image }}
+          style={styles.productImage}
+          resizeMode="contain"
+        />
+      ) : null}
+      <FieldRow label="Brand" value={descriptor.brand} />
+      <FieldRow label="Barcode" value={descriptor.barcode} />
+      {descriptor.nutriscore ? (
+        <View style={styles.nutriscoreRow}>
+          <Text style={styles.fieldLabel}>Nutri-Score</Text>
+          <View
+            style={[
+              styles.nutriscoreBadge,
+              {
+                backgroundColor:
+                  nutriscoreColors[descriptor.nutriscore] || '#9CA3AF',
+              },
+            ]}
+          >
+            <Text style={styles.nutriscoreText}>
+              {descriptor.nutriscore.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+      {descriptor.categories ? (
+        <FieldRow label="Categories" value={descriptor.categories} />
+      ) : null}
+      <FieldRow label="Confidence" value={descriptor.confidence} />
+      {descriptor.saveButton && (
+        <ComponentRenderer descriptor={descriptor.saveButton} />
+      )}
+      {descriptor.compareButton && (
+        <ComponentRenderer descriptor={descriptor.compareButton} />
+      )}
+    </ScrollView>
+  );
+};
 
 // ── Saved Items ────────────────────────────────────────────────
 const SavedItemsView = ({ descriptor }) => (
@@ -575,5 +670,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     marginTop: 12,
+  },
+  // Product result states
+  productImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginVertical: 12,
+    backgroundColor: '#F3F4F6',
+  },
+  nutriscoreRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E7EB',
+  },
+  nutriscoreBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  nutriscoreText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  notFoundText: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    marginTop: 12,
+    textAlign: 'center',
   },
 });

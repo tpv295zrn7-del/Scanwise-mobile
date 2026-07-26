@@ -1,5 +1,6 @@
 import { ConfidenceBadge } from '../components/ConfidenceBadge';
 import { FormButton } from '../components/FormButton';
+import { lookupProductByBarcode } from '../redux/thunks/scanThunk';
 
 const scoreGoalMatch = (goal = '', comparison = {}) => {
   if (goal === 'low_sugar') return comparison.sugarDelta < 0;
@@ -24,6 +25,8 @@ const compareNutrition = (original = {}, alternative = {}) => {
 };
 
 export const ProductResultScreen = ({
+  dispatch,
+  state = {},
   scanResult,
   product,
   confidence = 'verified',
@@ -40,11 +43,42 @@ export const ProductResultScreen = ({
   const initialProduct = currentScan || scanResult || product || {};
   const resolvedConfidence = initialProduct.confidence || confidence;
 
-  // Determine if we're still searching (barcode scanned but no product name yet)
+  // ── Product lookup from Redux state ──────────────────────────────
+  const scansState = state.scans || {};
+  const productLoading = scansState.productLoading;
+  const productData = scansState.productData;
+  const productError = scansState.productError;
+  const productNotFound = scansState.productNotFound;
+
+  const hasBarcode = !!initialProduct.barcode;
+  const hasNoProductData =
+    !initialProduct.name || initialProduct.name === 'Unknown Product';
+
+  // Determine whether we need to trigger an Open Food Facts lookup
+  const needsLookup =
+    hasBarcode &&
+    hasNoProductData &&
+    !productLoading &&
+    !productData &&
+    !productError &&
+    !productNotFound &&
+    typeof dispatch === 'function';
+
+  // Trigger the lookup via dispatch (guarded by needsLookup to prevent repeats)
+  if (needsLookup) {
+    dispatch(lookupProductByBarcode(initialProduct.barcode));
+  }
+
+  // ── Resolve active product data ──────────────────────────────────
+  // If we have product data from the API, use it; otherwise fall back to initial
+  const activeProduct = productData
+    ? { ...initialProduct, ...productData, confidence: resolvedConfidence }
+    : initialProduct;
+
+  // ── Display states ───────────────────────────────────────────────
+  const lookupError = productError && !productNotFound;
   const isSearching =
-    initialProduct.barcode &&
-    (!initialProduct.name || initialProduct.name === 'Unknown Product') &&
-    (!initialProduct.brand || initialProduct.brand === 'Unknown Brand');
+    productLoading || (hasBarcode && hasNoProductData && !productError && !productNotFound);
 
   const saveIcon = require('../assets/icon-save.png');
   const compareIcon = require('../assets/icon-compare.png');
@@ -53,7 +87,7 @@ export const ProductResultScreen = ({
   let selectedIndex = 0;
   let comparisonVisible = false;
   let saved = initiallySaved;
-  let activeScan = initialProduct;
+  let activeScan = activeProduct;
 
   const hydrateAlternative = (alternative) => {
     const nutritionalComparison = compareNutrition(initialProduct, alternative);
@@ -87,6 +121,18 @@ export const ProductResultScreen = ({
     },
     get barcode() {
       return activeScan.barcode || null;
+    },
+    get image() {
+      return activeScan.image || null;
+    },
+    get nutriscore() {
+      return activeScan.nutriscore || null;
+    },
+    get categories() {
+      return activeScan.categories || '';
+    },
+    get ingredients() {
+      return activeScan.ingredients || '';
     },
     confidence: resolvedConfidence,
     get nutritionInfo() {
@@ -123,11 +169,24 @@ export const ProductResultScreen = ({
     get currentScan() {
       return activeScan;
     },
+    // ── Product lookup states for the renderer ────────────────────
     get searching() {
       return isSearching;
     },
     get isSearching() {
       return isSearching;
+    },
+    get loading() {
+      return productLoading;
+    },
+    get lookupError() {
+      return lookupError;
+    },
+    get notFound() {
+      return productNotFound;
+    },
+    get errorMessage() {
+      return productError || null;
     },
     toggleComparison() {
       comparisonVisible = !comparisonVisible;
