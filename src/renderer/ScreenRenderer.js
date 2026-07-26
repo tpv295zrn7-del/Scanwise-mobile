@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { ComponentRenderer } from './ComponentRenderer';
 import { ScanView as ScanViewComponent } from '../components/ScanView';
+import { fetchProductByBarcode } from '../services/productApi';
 import { COLORS } from '../utils/constants';
 
 const nutriscoreColors = {
@@ -257,8 +258,98 @@ const ScanView = ({ descriptor }) => {
 
 // ── Product Result ─────────────────────────────────────────────
 const ProductResultView = ({ descriptor }) => {
-  // Loading state: API call is in flight
-  if (descriptor.loading) {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [notFound, setNotFound] = useState(false);
+
+  const needsLookup = descriptor.searching && descriptor.barcode;
+
+  useEffect(() => {
+    if (!needsLookup) return;
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setNotFound(false);
+
+    fetchProductByBarcode(descriptor.barcode)
+      .then((data) => {
+        if (cancelled) return;
+        if (data) {
+          setProduct(data);
+          setNotFound(false);
+        } else {
+          setNotFound(true);
+          setProduct(null);
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err.message || 'Failed to look up product');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [descriptor.barcode, needsLookup]);
+
+  // ── Not searching — descriptor already has product data ────────
+  if (!needsLookup) {
+    return (
+      <ScrollView contentContainerStyle={styles.screen}>
+        <Text style={styles.screenTitle}>
+          {descriptor.productName || 'Product'}
+        </Text>
+        {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
+        {descriptor.image ? (
+          <Image
+            source={{ uri: descriptor.image }}
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+        ) : null}
+        <FieldRow label="Brand" value={descriptor.brand} />
+        <FieldRow label="Barcode" value={descriptor.barcode} />
+        {descriptor.nutriscore ? (
+          <View style={styles.nutriscoreRow}>
+            <Text style={styles.fieldLabel}>Nutri-Score</Text>
+            <View
+              style={[
+                styles.nutriscoreBadge,
+                {
+                  backgroundColor:
+                    nutriscoreColors[descriptor.nutriscore] || '#9CA3AF',
+                },
+              ]}
+            >
+              <Text style={styles.nutriscoreText}>
+                {descriptor.nutriscore.toUpperCase()}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+        {descriptor.categories ? (
+          <FieldRow label="Categories" value={descriptor.categories} />
+        ) : null}
+        <FieldRow label="Confidence" value={descriptor.confidence} />
+        {descriptor.saveButton && (
+          <ComponentRenderer descriptor={descriptor.saveButton} />
+        )}
+        {descriptor.compareButton && (
+          <ComponentRenderer descriptor={descriptor.compareButton} />
+        )}
+      </ScrollView>
+    );
+  }
+
+  // ── Searching: render based on local fetch state ───────────────
+
+  // Loading state
+  if (loading) {
     return (
       <View style={styles.centered}>
         <Text style={styles.screenTitle}>Product Lookup</Text>
@@ -271,8 +362,8 @@ const ProductResultView = ({ descriptor }) => {
     );
   }
 
-  // Not found state: product not in Open Food Facts database
-  if (descriptor.notFound) {
+  // Not found state
+  if (notFound) {
     return (
       <View style={styles.centered}>
         <Text style={styles.screenTitle}>Product Not Found</Text>
@@ -286,8 +377,8 @@ const ProductResultView = ({ descriptor }) => {
     );
   }
 
-  // Error state: API call failed
-  if (descriptor.lookupError) {
+  // Error state
+  if (error) {
     return (
       <View style={styles.centered}>
         <Text style={styles.screenTitle}>Lookup Error</Text>
@@ -299,65 +390,84 @@ const ProductResultView = ({ descriptor }) => {
     );
   }
 
-  // Searching state: barcode scanned but no API call started yet
-  if (descriptor.searching || descriptor.isSearching) {
+  // Success: product data fetched
+  if (product) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.screenTitle}>Product Found</Text>
+      <ScrollView contentContainerStyle={styles.screen}>
+        <Text style={styles.screenTitle}>
+          {product.name || descriptor.productName || 'Product'}
+        </Text>
+        {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
+        {product.image ? (
+          <Image
+            source={{ uri: product.image }}
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+        ) : null}
+        <FieldRow label="Brand" value={product.brand || descriptor.brand} />
         <FieldRow label="Barcode" value={descriptor.barcode} />
-        <View style={styles.searchingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.searchingText}>Looking up product...</Text>
-        </View>
-      </View>
+        {product.nutriscore ? (
+          <View style={styles.nutriscoreRow}>
+            <Text style={styles.fieldLabel}>Nutri-Score</Text>
+            <View
+              style={[
+                styles.nutriscoreBadge,
+                {
+                  backgroundColor:
+                    nutriscoreColors[product.nutriscore] || '#9CA3AF',
+                },
+              ]}
+            >
+              <Text style={styles.nutriscoreText}>
+                {product.nutriscore.toUpperCase()}
+              </Text>
+            </View>
+          </View>
+        ) : descriptor.nutriscore ? (
+          <View style={styles.nutriscoreRow}>
+            <Text style={styles.fieldLabel}>Nutri-Score</Text>
+            <View
+              style={[
+                styles.nutriscoreBadge,
+                {
+                  backgroundColor:
+                    nutriscoreColors[descriptor.nutriscore] || '#9CA3AF',
+                },
+              ]}
+            >
+              <Text style={styles.nutriscoreText}>
+                {descriptor.nutriscore.toUpperCase()}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+        {product.categories ? (
+          <FieldRow label="Categories" value={product.categories} />
+        ) : descriptor.categories ? (
+          <FieldRow label="Categories" value={descriptor.categories} />
+        ) : null}
+        <FieldRow label="Confidence" value={descriptor.confidence} />
+        {descriptor.saveButton && (
+          <ComponentRenderer descriptor={descriptor.saveButton} />
+        )}
+        {descriptor.compareButton && (
+          <ComponentRenderer descriptor={descriptor.compareButton} />
+        )}
+      </ScrollView>
     );
   }
 
-  // Success state: product data available
+  // Initial searching state (before fetch fires)
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
-      <Text style={styles.screenTitle}>
-        {descriptor.productName || 'Product'}
-      </Text>
-      {descriptor.badge && <ComponentRenderer descriptor={descriptor.badge} />}
-      {descriptor.image ? (
-        <Image
-          source={{ uri: descriptor.image }}
-          style={styles.productImage}
-          resizeMode="contain"
-        />
-      ) : null}
-      <FieldRow label="Brand" value={descriptor.brand} />
+    <View style={styles.centered}>
+      <Text style={styles.screenTitle}>Product Found</Text>
       <FieldRow label="Barcode" value={descriptor.barcode} />
-      {descriptor.nutriscore ? (
-        <View style={styles.nutriscoreRow}>
-          <Text style={styles.fieldLabel}>Nutri-Score</Text>
-          <View
-            style={[
-              styles.nutriscoreBadge,
-              {
-                backgroundColor:
-                  nutriscoreColors[descriptor.nutriscore] || '#9CA3AF',
-              },
-            ]}
-          >
-            <Text style={styles.nutriscoreText}>
-              {descriptor.nutriscore.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-      ) : null}
-      {descriptor.categories ? (
-        <FieldRow label="Categories" value={descriptor.categories} />
-      ) : null}
-      <FieldRow label="Confidence" value={descriptor.confidence} />
-      {descriptor.saveButton && (
-        <ComponentRenderer descriptor={descriptor.saveButton} />
-      )}
-      {descriptor.compareButton && (
-        <ComponentRenderer descriptor={descriptor.compareButton} />
-      )}
-    </ScrollView>
+      <View style={styles.searchingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.searchingText}>Looking up product...</Text>
+      </View>
+    </View>
   );
 };
 
