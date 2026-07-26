@@ -267,6 +267,34 @@ const ProductResultView = ({ descriptor }) => {
   const [error, setError] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
+  // Immediate auto-save whenever product data is present on mount,
+  // regardless of how it arrived (scan, navigation params, etc.)
+  useEffect(() => {
+    if (descriptor.barcode && descriptor.productName) {
+      dispatch(
+        saveScan({
+          barcode: descriptor.barcode,
+          productName: descriptor.productName,
+          brand: descriptor.brand,
+          image: descriptor.image,
+          nutriscore: descriptor.nutriscore,
+          category: descriptor.categories,
+        })
+      );
+      dispatch(
+        saveItem({
+          barcode: descriptor.barcode,
+          productName: descriptor.productName,
+          brand: descriptor.brand,
+          image: descriptor.image,
+          nutriscore: descriptor.nutriscore,
+          category: descriptor.categories,
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
+  }, []); // empty deps = fires exactly once on mount
+
   const needsLookup = descriptor.searching && descriptor.barcode;
   const isSaved = useSelector(selectIsScanSaved(descriptor.barcode));
 
@@ -323,34 +351,6 @@ const ProductResultView = ({ descriptor }) => {
       cancelled = true;
     };
   }, [descriptor.barcode, needsLookup, dispatch]);
-
-  // Auto-save whenever product data exists, regardless of source
-  // (direct scan data or API fetch result)
-  useEffect(() => {
-    if (descriptor.productName && descriptor.barcode) {
-      dispatch(
-        saveScan({
-          barcode: descriptor.barcode,
-          productName: descriptor.productName,
-          brand: descriptor.brand,
-          image: descriptor.image,
-          nutriscore: descriptor.nutriscore,
-          category: descriptor.categories,
-        })
-      );
-      dispatch(
-        saveItem({
-          barcode: descriptor.barcode,
-          productName: descriptor.productName,
-          brand: descriptor.brand,
-          image: descriptor.image,
-          nutriscore: descriptor.nutriscore,
-          category: descriptor.categories,
-          timestamp: new Date().toISOString(),
-        })
-      );
-    }
-  }, [descriptor.productName, descriptor.barcode, dispatch]);
 
   // ── Not searching — descriptor already has product data ────────
   if (!needsLookup) {
