@@ -56,7 +56,13 @@ const INITIAL_SCREENS = {
  * function signatures.
  */
 const AppNavigator = () => {
-  const state = useSelector((s) => s);
+  // Select only the state slices needed for route resolution
+  const state = useSelector((s) => ({
+    auth: s.auth,
+    onboarding: s.onboarding,
+    healthProfiles: s.healthProfiles,
+    scans: s.scans,
+  }));
   const dispatch = useDispatch();
 
   const routeGroup = resolveRouteGroup(state);
