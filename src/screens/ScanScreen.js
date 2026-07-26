@@ -116,6 +116,16 @@ export const ScanScreen = ({
       if (!isSuccessfulScan(action)) {
         error = action?.error?.message || DEFAULT_SCAN_ERROR;
         triggerError();
+        // Navigate anyway with barcode-only fallback so the user flow
+        // isn't blocked by an unreachable API (common in dev/Expo Go).
+        currentScan = {
+          barcode,
+          name: undefined,
+          brand: undefined,
+          confidence: 'incomplete',
+        };
+        scanning = false;
+        navigation?.navigate?.('ProductResult', { scanResult: { ...currentScan, barcode } });
         return null;
       }
 
