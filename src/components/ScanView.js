@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { Camera } from 'expo-camera';
 import { COLORS } from '../utils/constants';
 
 /**
@@ -30,23 +31,6 @@ export const ScanView = ({
   const [permission, setPermission] = useState(initialPermission);
   const [scanned, setScanned] = useState(false);
   const CameraRef = useRef(null);
-
-  // Lazily require expo-camera so Metro doesn't fail when the module
-  // isn't installed (e.g. CI / test environments).
-  const [CameraModule, setCameraModule] = useState(null);
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const mod = require('expo-camera');
-        if (!cancelled) setCameraModule(mod);
-      } catch (_) {
-        // expo-camera not available — show permission prompt
-      }
-    };
-    load();
-    return () => { cancelled = true; };
-  }, []);
 
   // Keep local permission in sync with prop
   useEffect(() => {
@@ -79,12 +63,9 @@ export const ScanView = ({
     }
 
     // Fallback: try expo-camera's own permission API
-    if (CameraModule?.Camera) {
-      const { status } =
-        await CameraModule.Camera.requestCameraPermissionsAsync();
-      setPermission(status);
-    }
-  }, [onRequestPermission, CameraModule]);
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setPermission(status);
+  }, [onRequestPermission]);
 
   // ── Permission not granted ────────────────────────────────────
   if (permission !== 'granted') {
@@ -115,18 +96,6 @@ export const ScanView = ({
     );
   }
 
-  // ── Camera not loaded yet ─────────────────────────────────────
-  if (!CameraModule) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading camera...</Text>
-      </View>
-    );
-  }
-
-  const { Camera } = CameraModule;
-
   // ── Camera view with barcode overlay ──────────────────────────
   return (
     <View style={styles.container}>
@@ -134,8 +103,8 @@ export const ScanView = ({
         ref={CameraRef}
         style={styles.camera}
         type={Camera.Constants?.Type?.back ?? 'back'}
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barCodeScannerSettings={{
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        barcodeScannerSettings={{
           barCodeTypes: [
             'ean13', 'ean8', 'upc_a', 'upc_e', 'code128',
             'code39', 'code93', 'itf14', 'qr', 'pdf417',
