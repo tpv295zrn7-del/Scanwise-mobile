@@ -1,12 +1,12 @@
-import { CameraView } from 'expo-camera';
+import { getCameraPermissionsAsync, requestCameraPermissionsAsync } from 'expo-camera';
 
 export const checkCameraPermission = async () => {
-  const { status } = await CameraView.getCameraPermissionsAsync();
+  const { status } = await getCameraPermissionsAsync();
   return status;
 };
 
 export const requestCameraPermission = async () => {
-  const { status } = await CameraView.requestCameraPermissionsAsync();
+  const { status } = await requestCameraPermissionsAsync();
   return status;
 };
 
