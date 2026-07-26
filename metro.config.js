@@ -11,9 +11,4 @@ config.watcher = false;
 // Disable Watchman for resolution (reduces file descriptor usage)
 config.resolver.useWatchman = false;
 
-// Force Metro to not use the node watcher
-// Note: this key is not part of Metro's public config schema,
-// but Metro silently ignores unknown keys if unsupported
-config.watch = false;
-
 module.exports = config;
