@@ -13,7 +13,7 @@ import { ComponentRenderer } from './ComponentRenderer';
 import { ScanView as ScanViewComponent } from '../components/ScanView';
 import { fetchProductByBarcode } from '../services/productApi';
 import { saveScan, selectSavedScans, selectIsScanSaved } from '../redux/slices/scansSlice';
-import { saveItem } from '../redux/slices/savedItemsSlice';
+import { saveItem, selectSavedItems } from '../redux/slices/savedItemsSlice';
 import { COLORS } from '../utils/constants';
 
 const nutriscoreColors = {
@@ -576,13 +576,10 @@ const ProductResultView = ({ descriptor }) => {
 
 // ── Saved Items ────────────────────────────────────────────────
 const SavedItemsView = ({ descriptor }) => {
+  const savedItems = useSelector(selectSavedItems);
   const savedScans = useSelector(selectSavedScans);
-  // Prefer descriptor items (from savedItemsSlice via factory),
-  // fall back to scansSlice if descriptor is empty
-  const items =
-    descriptor.items && descriptor.items.length > 0
-      ? descriptor.items
-      : savedScans;
+  // Use whichever slice has data — bypasses the factory descriptor entirely
+  const items = savedItems.length > 0 ? savedItems : savedScans;
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
