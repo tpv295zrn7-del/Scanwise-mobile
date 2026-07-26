@@ -55,9 +55,25 @@ const onboardingSlice = createSlice({
 });
 
 export const { setCurrentStep, markStepComplete } = onboardingSlice.actions;
-export const selectOnboardingState = (state) => state.onboarding;
-export const selectCurrentStep = (state) => state.onboarding.currentStep;
-export const selectOnboardingProgress = (state) => state.onboarding.progress;
-export const selectCompletedSteps = (state) => state.onboarding.completedSteps;
+
+export const selectOnboardingState = (state) => {
+  // Defensive selector: handle both full state and partial state
+  return (state && state.onboarding) || state || initialState;
+};
+
+export const selectCurrentStep = (state) => {
+  const onboardingState = selectOnboardingState(state);
+  return (onboardingState && onboardingState.currentStep) || 0;
+};
+
+export const selectOnboardingProgress = (state) => {
+  const onboardingState = selectOnboardingState(state);
+  return (onboardingState && onboardingState.progress) || 0;
+};
+
+export const selectCompletedSteps = (state) => {
+  const onboardingState = selectOnboardingState(state);
+  return (onboardingState && onboardingState.completedSteps) || [];
+};
 
 export default onboardingSlice.reducer;
