@@ -5,10 +5,12 @@ import { validatePassword } from '../../services/auth';
 
 export const MAX_LOGIN_ATTEMPTS = 5;
 
+// DEV MODE: bypass auth for scanner testing — REVERT BEFORE SHIPPING
 const initialState = {
-  user: null,
-  accessToken: null,
-  refreshToken: null,
+  user: { id: 'dev-user-1', email: 'dev@scanwise.local', name: 'Dev User' },
+  isAuthenticated: true,
+  accessToken: 'dev-mock-token',
+  refreshToken: 'dev-mock-refresh',
   status: 'idle',
   error: null,
   failedAttempts: 0,

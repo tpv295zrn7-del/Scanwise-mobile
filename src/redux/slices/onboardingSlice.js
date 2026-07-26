@@ -7,10 +7,12 @@ const MAX_STEP_INDEX = TOTAL_ONBOARDING_STEPS - 1;
 const calculateProgress = (completedCount) =>
   Math.min(1, completedCount / TOTAL_ONBOARDING_STEPS);
 
+// DEV MODE: bypass onboarding for scanner testing — REVERT BEFORE SHIPPING
 const initialState = {
-  currentStep: 0,
-  completedSteps: [],
-  progress: 0
+  isComplete: true,
+  currentStep: MAX_STEP_INDEX,
+  completedSteps: [0, 1, 2, 3, 4],
+  progress: 1
 };
 
 export const saveOnboardingState = createAsyncThunk(
