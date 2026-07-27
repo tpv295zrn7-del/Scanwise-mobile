@@ -1,19 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
-import { store } from './redux/store';
+import { createStore } from './redux/store';
 import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
 import { ScreenRenderer } from './renderer/ScreenRenderer';
 import { selectCurrentUser } from './redux/slices/authSlice';
 import { selectOnboardingProgress } from './redux/slices/onboardingSlice';
-
-// DEBUG: monitor Redux state for saved items
-if (typeof store.subscribe === 'function') {
-  store.subscribe(() => {
-    const s = store.getState();
-    console.log('[SAVE-DEBUG] Store updated — savedItems:', s.savedItems?.items?.length, 'scans.savedScans:', s.scans?.savedScans?.length);
-  });
-}
 
 // Screen factories — each returns a plain descriptor object
 import { HomeScreen } from './screens/HomeScreen';
@@ -70,7 +62,7 @@ const AppNavigator = () => {
   const scans = useSelector((s) => s.scans);
   const dispatch = useDispatch();
 
-  const fullState = store.getState();
+  const fullState = useSelector((s) => s);
   const routeGroup = resolveRouteGroup(fullState);
   const [screenStack, setScreenStack] = useState([
     INITIAL_SCREENS[routeGroup] || 'Home',
@@ -136,8 +128,24 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
+  const storeRef = useRef(null);
+  if (!storeRef.current) {
+    storeRef.current = createStore();
+  }
+
+  useEffect(() => {
+    const store = storeRef.current;
+    if (typeof store.subscribe === 'function') {
+      const unsubscribe = store.subscribe(() => {
+        const s = store.getState();
+        console.log('[SAVE-DEBUG] Store updated — savedItems:', s.savedItems?.items?.length, 'scans.savedScans:', s.scans?.savedScans?.length);
+      });
+      return unsubscribe;
+    }
+  }, []);
+
   return (
-    <Provider store={store}>
+    <Provider store={storeRef.current}>
       <AppNavigator />
     </Provider>
   );
