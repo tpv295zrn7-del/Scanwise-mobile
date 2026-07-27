@@ -7,6 +7,14 @@ import { ScreenRenderer } from './renderer/ScreenRenderer';
 import { selectCurrentUser } from './redux/slices/authSlice';
 import { selectOnboardingProgress } from './redux/slices/onboardingSlice';
 
+// DEBUG: monitor Redux state for saved items
+if (typeof store.subscribe === 'function') {
+  store.subscribe(() => {
+    const s = store.getState();
+    console.log('[SAVE-DEBUG] Store updated — savedItems:', s.savedItems?.items?.length, 'scans.savedScans:', s.scans?.savedScans?.length);
+  });
+}
+
 // Screen factories — each returns a plain descriptor object
 import { HomeScreen } from './screens/HomeScreen';
 import { LoginScreen } from './screens/LoginScreen';
