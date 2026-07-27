@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistStore } from 'redux-persist';
 import { createStore } from './redux/store';
 import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
 import { ScreenRenderer } from './renderer/ScreenRenderer';
@@ -128,9 +130,35 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
+  const storeRef = useRef(null);
+  const persistorRef = useRef(null);
+
+  if (!storeRef.current) {
+    storeRef.current = createStore();
+    persistorRef.current = persistStore(storeRef.current);
+  }
+
+  useEffect(() => {
+    const store = storeRef.current;
+    if (typeof store.subscribe === 'function') {
+      const unsubscribe = store.subscribe(() => {
+        const s = store.getState();
+        console.log(
+          '[SAVE-DEBUG] Store updated — savedItems:',
+          s.savedItems?.items?.length,
+          'scans.savedScans:',
+          s.scans?.savedScans?.length,
+        );
+      });
+      return unsubscribe;
+    }
+  }, []);
+
   return (
-    <Provider store={createStore()}>
-      <AppNavigator />
+    <Provider store={storeRef.current}>
+      <PersistGate loading={null} persistor={persistorRef.current}>
+        <AppNavigator />
+      </PersistGate>
     </Provider>
   );
 }
