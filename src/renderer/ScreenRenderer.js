@@ -581,6 +581,15 @@ const SavedItemsView = ({ descriptor }) => {
   const savedItems = useSelector(selectSavedItems);
   const savedScans = useSelector(selectSavedScans);
   console.log('[SAVE-DEBUG] SavedItemsView — savedItems:', savedItems.length, 'savedScans:', savedScans.length);
+  const fullState = useSelector(s => s);
+  console.log('[STATE-DUMP] Full Redux state at SavedItemsView render:', JSON.stringify({
+    savedItems: fullState.savedItems,
+    scans: {
+      savedScans: fullState.scans?.savedScans,
+      currentScan: fullState.scans?.currentScan ? 'present' : null,
+      scanHistory: fullState.scans?.scanHistory?.length,
+    },
+  }, null, 2));
   // Use whichever slice has data — bypasses the factory descriptor entirely
   const items = savedItems.length > 0 ? savedItems : savedScans;
 
