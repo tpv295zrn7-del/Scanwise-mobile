@@ -1,4 +1,6 @@
 import { scanProductByBarcode } from '../redux/thunks/scanThunk';
+import { saveScan } from '../redux/slices/scansSlice';
+import { saveItem } from '../redux/slices/savedItemsSlice';
 import { CancelButton } from '../components/CancelButton';
 import { ScanOverlay } from '../components/ScanOverlay';
 import {
@@ -75,6 +77,9 @@ export const ScanScreen = ({
     error = null;
     detectedBarcode = barcode;
     lastBarcode = barcode;
+
+    dispatch(saveScan({ barcode, productName: 'Scanning...', brand: '', image: null }));
+    dispatch(saveItem({ barcode, productName: 'Scanning...', brand: '', image: null }));
 
     if (onHaptic) {
       onHaptic('impactMedium');
