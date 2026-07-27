@@ -9,7 +9,7 @@
     "format": "prettier --check ."
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@reduxjs/toolkit": "^2.2.6",
     "axios": "^1.18.0",
     "expo": "~54.0.0",
