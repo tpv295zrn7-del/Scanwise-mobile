@@ -61,8 +61,19 @@ const savedItemsSlice = createSlice({
       const { barcode, productName, brand, image, nutriscore, category, timestamp } =
         action.payload;
       const id = barcode;
-      const exists = state.items.some((item) => item.id === id);
-      if (!exists) {
+      const idx = state.items.findIndex((item) => item.id === id);
+      if (idx >= 0) {
+        state.items[idx] = {
+          ...state.items[idx],
+          barcode: barcode || state.items[idx].barcode,
+          name: productName || state.items[idx].name,
+          brand: brand || state.items[idx].brand,
+          image: image !== undefined ? image : state.items[idx].image,
+          nutriscore: nutriscore !== undefined ? nutriscore : state.items[idx].nutriscore,
+          category: category !== undefined ? category : state.items[idx].category,
+          lastScannedDate: timestamp || new Date().toISOString(),
+        };
+      } else {
         state.items.push({
           id,
           barcode,

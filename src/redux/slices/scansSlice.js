@@ -37,8 +37,18 @@ const scansSlice = createSlice({
     saveScan: (state, action) => {
       const { barcode, productName, brand, image, nutriscore, category } =
         action.payload;
-      const exists = state.savedScans.some((s) => s.barcode === barcode);
-      if (!exists) {
+      const idx = state.savedScans.findIndex((s) => s.barcode === barcode);
+      if (idx >= 0) {
+        state.savedScans[idx] = {
+          ...state.savedScans[idx],
+          productName: productName || state.savedScans[idx].productName,
+          brand: brand || state.savedScans[idx].brand,
+          image: image !== undefined ? image : state.savedScans[idx].image,
+          nutriscore: nutriscore !== undefined ? nutriscore : state.savedScans[idx].nutriscore,
+          category: category !== undefined ? category : state.savedScans[idx].category,
+          timestamp: new Date().toISOString(),
+        };
+      } else {
         state.savedScans.unshift({
           barcode,
           productName: productName || 'Unknown Product',
