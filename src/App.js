@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
 import { createStore } from './redux/store';
@@ -128,24 +128,8 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
-  const storeRef = useRef(null);
-  if (!storeRef.current) {
-    storeRef.current = createStore();
-  }
-
-  useEffect(() => {
-    const store = storeRef.current;
-    if (typeof store.subscribe === 'function') {
-      const unsubscribe = store.subscribe(() => {
-        const s = store.getState();
-        console.log('[SAVE-DEBUG] Store updated — savedItems:', s.savedItems?.items?.length, 'scans.savedScans:', s.scans?.savedScans?.length);
-      });
-      return unsubscribe;
-    }
-  }, []);
-
   return (
-    <Provider store={storeRef.current}>
+    <Provider store={createStore()}>
       <AppNavigator />
     </Provider>
   );
