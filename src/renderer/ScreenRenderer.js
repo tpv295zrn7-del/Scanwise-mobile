@@ -270,7 +270,9 @@ const ProductResultView = ({ descriptor }) => {
   // Immediate auto-save whenever product data is present on mount,
   // regardless of how it arrived (scan, navigation params, etc.)
   useEffect(() => {
+    console.log('[SAVE-DEBUG] ProductResultView mount — barcode:', descriptor.barcode, 'productName:', descriptor.productName, 'searching:', descriptor.searching);
     if (descriptor.barcode && descriptor.productName) {
+      console.log('[SAVE-DEBUG] ProductResultView dispatching saveScan+saveItem for:', descriptor.barcode, descriptor.productName);
       dispatch(
         saveScan({
           barcode: descriptor.barcode,
@@ -578,6 +580,7 @@ const ProductResultView = ({ descriptor }) => {
 const SavedItemsView = ({ descriptor }) => {
   const savedItems = useSelector(selectSavedItems);
   const savedScans = useSelector(selectSavedScans);
+  console.log('[SAVE-DEBUG] SavedItemsView — savedItems:', savedItems.length, 'savedScans:', savedScans.length);
   // Use whichever slice has data — bypasses the factory descriptor entirely
   const items = savedItems.length > 0 ? savedItems : savedScans;
 

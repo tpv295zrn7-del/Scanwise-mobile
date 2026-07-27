@@ -80,6 +80,7 @@ export const ScanScreen = ({
 
     dispatch(saveScan({ barcode, productName: 'Scanning...', brand: '', image: null }));
     dispatch(saveItem({ barcode, productName: 'Scanning...', brand: '', image: null }));
+    console.log('[SAVE-DEBUG] ScanScreen dispatched saveScan+saveItem for barcode:', barcode);
 
     if (onHaptic) {
       onHaptic('impactMedium');
