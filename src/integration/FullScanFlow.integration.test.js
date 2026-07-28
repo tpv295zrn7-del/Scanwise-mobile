@@ -26,7 +26,7 @@ test('complete scan flow navigates to product result', async () => {
   expect(scanBarcode).toHaveBeenCalledWith('009988');
   expect(onHaptic).toHaveBeenCalled();
   expect(navigation.navigate).toHaveBeenCalledWith(
-    'ProductResultScreen',
+    'ProductResult',
     expect.objectContaining({ barcode: '009988' })
   );
 });

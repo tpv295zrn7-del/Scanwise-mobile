@@ -112,7 +112,7 @@ export const ScanScreen = ({
           currentScan = responseData;
         }
         scanning = false;
-        navigation?.navigate?.('ProductResultScreen', {
+        navigation?.navigate?.('ProductResult', {
           barcode,
           result: currentScan
         });

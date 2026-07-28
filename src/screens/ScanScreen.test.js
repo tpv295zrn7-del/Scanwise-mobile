@@ -220,7 +220,7 @@ describe('ScanScreen', () => {
     expect(scanProductByBarcode).toHaveBeenNthCalledWith(3, '333');
   });
 
-  test('navigates to ProductResultScreen on successful scan', async () => {
+  test('navigates to ProductResult on successful scan', async () => {
     const navigation = { navigate: jest.fn() };
     const dispatch = jest.fn(() =>
       Promise.resolve({
@@ -262,7 +262,7 @@ describe('ScanScreen', () => {
     expect(directScan).toHaveBeenCalledWith('1234567890123');
     expect(onHaptic).toHaveBeenCalled();
     expect(navigation.navigate).toHaveBeenCalledWith(
-      'ProductResultScreen',
+      'ProductResult',
       expect.objectContaining({ barcode: '1234567890123' })
     );
     expect(screen.lastBarcode).toBe('1234567890123');
@@ -333,7 +333,7 @@ describe('ScanScreen', () => {
     await expect(screen.requestPermission()).resolves.toBe('denied');
     await screen.submitManualEntry('abc');
     expect(navigation.navigate).toHaveBeenCalledWith(
-      'ProductResultScreen',
+      'ProductResult',
       expect.objectContaining({ result: 'ok' })
     );
   });

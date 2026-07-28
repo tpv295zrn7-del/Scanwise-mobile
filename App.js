@@ -107,10 +107,6 @@ const MainAppNavigator = () =>
       component: ProductResultScreenView
     }),
     React.createElement(AppStack.Screen, {
-      name: 'ProductResultScreen',
-      component: ProductResultScreenView
-    }),
-    React.createElement(AppStack.Screen, {
       name: 'Comparison',
       component: ComparisonScreenView
     }),
