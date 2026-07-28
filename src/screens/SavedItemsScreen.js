@@ -34,10 +34,19 @@ export const SavedItemsScreen = ({
 export const SavedItemsScreenView = () => {
   const { FlatList, Text, TouchableOpacity, View } = require('react-native');
   const { useSelector, useDispatch } = require('react-redux');
-  const { selectSavedItems } = require('../redux/slices/savedItemsSlice');
-  const { removeSavedItem } = require('../redux/slices/savedItemsSlice');
+  const { useEffect } = require('react');
+  const {
+    selectSavedItems,
+    removeSavedItem,
+    fetchSavedItems
+  } = require('../redux/slices/savedItemsSlice');
   const dispatch = useDispatch();
   const savedItems = useSelector(selectSavedItems);
+
+  useEffect(() => {
+    dispatch(fetchSavedItems());
+  }, [dispatch]);
+
   const model = SavedItemsScreen({
     items: savedItems,
     onRemove: (id) => dispatch(removeSavedItem(id))

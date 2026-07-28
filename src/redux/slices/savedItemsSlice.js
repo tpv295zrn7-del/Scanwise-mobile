@@ -23,18 +23,22 @@ export const fetchSavedItems = createAsyncThunk('savedItems/fetch', async () => 
     return cachedItems;
   }
 
-  const response = await endpoints.getSavedItems();
-  const items = response.data || [];
-  await saveSavedItemsCache(items);
-  return items;
+  try {
+    const response = await endpoints.getSavedItems();
+    const items = response.data || [];
+    await saveSavedItemsCache(items);
+    return items;
+  } catch {
+    return [];
+  }
 });
 
 export const addToSavedItems = createAsyncThunk(
   'savedItems/addToSavedItems',
   async (product) => {
     await addSavedItemToCache(product);
-    const response = await endpoints.addSavedItem(product);
-    return response.data || product;
+    endpoints.addSavedItem(product).catch(() => null);
+    return product;
   }
 );
 
@@ -42,7 +46,7 @@ export const removeSavedItem = createAsyncThunk(
   'savedItems/removeSavedItem',
   async (productId) => {
     await removeSavedItemFromCache(productId);
-    await endpoints.removeSavedItem(productId);
+    endpoints.removeSavedItem(productId).catch(() => null);
     return productId;
   }
 );

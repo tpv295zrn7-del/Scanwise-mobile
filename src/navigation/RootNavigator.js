@@ -65,18 +65,19 @@ const StackBackButton = ({ onPress }) => {
   );
 };
 
-export const createStackScreenOptions = ({ navigation, route }) => ({
-  headerLeft: () => {
-    const state = navigation?.getState?.();
-    const index = state?.index ?? (route?.index ?? -1);
-    if (index <= 0 && !navigation?.canGoBack?.()) {
-      return null;
-    }
-
-    return React.createElement(StackBackButton, {
-      onPress: () => navigation?.goBack?.()
-    });
+const BackButton = () => {
+  const { useNavigation } = require('@react-navigation/native');
+  const navigation = useNavigation();
+  if (!navigation.canGoBack()) {
+    return null;
   }
+  return React.createElement(StackBackButton, {
+    onPress: () => navigation.goBack()
+  });
+};
+
+export const createStackScreenOptions = () => ({
+  headerLeft: () => React.createElement(BackButton)
 });
 
 export const RootNavigator = (state) => resolveRouteGroup(state);

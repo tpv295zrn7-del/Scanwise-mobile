@@ -99,13 +99,15 @@ describe('savedItemsSlice', () => {
     expect(s.getState().savedItems.items.map((item) => item.id)).toEqual(['2']);
   });
 
-  test('thunk errors are stored', async () => {
+  test('API failures are silently ignored — item still added to Redux', async () => {
     endpoints.addSavedItem.mockRejectedValueOnce(new Error('save failed'));
 
     const s = store();
     await s.dispatch(addToSavedItems({ id: 'x' }));
 
-    expect(s.getState().savedItems.error).toBe('save failed');
+    // Offline-first: API error is swallowed, item is still in state
+    expect(s.getState().savedItems.error).toBeNull();
+    expect(s.getState().savedItems.items).toEqual([{ id: 'x' }]);
   });
 
   test('fetches backend when cache empty and handles remove failure', async () => {
@@ -118,20 +120,22 @@ describe('savedItemsSlice', () => {
     await s.dispatch(removeSavedItem('9'));
 
     expect(s.getState().savedItems.items).toEqual([]);
-    expect(s.getState().savedItems.error).toBe('remove failed');
+    // Offline-first: remove API error is swallowed
+    expect(s.getState().savedItems.error).toBeNull();
   });
 
-  test('handles fetch failure and add fallback payload', async () => {
+  test('handles fetch failure gracefully — returns empty list, no error stored', async () => {
     persistence.loadSavedItemsCache.mockResolvedValueOnce([]);
     endpoints.getSavedItems.mockRejectedValueOnce(new Error('fetch failed'));
     endpoints.addSavedItem.mockResolvedValueOnce({ data: null });
 
     const s = store();
     await s.dispatch(fetchSavedItems());
-    expect(s.getState().savedItems.error).toBe('fetch failed');
-    await s.dispatch(addToSavedItems({ id: 'fallback' }));
-
+    // Offline-first: fetch API failure returns empty list, no error in state
     expect(s.getState().savedItems.error).toBeNull();
+    expect(s.getState().savedItems.items).toEqual([]);
+
+    await s.dispatch(addToSavedItems({ id: 'fallback' }));
     expect(s.getState().savedItems.items).toEqual([{ id: 'fallback' }]);
   });
 });
