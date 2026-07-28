@@ -1,4 +1,3 @@
-import React from 'react';
 import { selectCurrentUser } from '../redux/slices/authSlice';
 import { selectOnboardingProgress } from '../redux/slices/onboardingSlice';
 import {
@@ -50,34 +49,5 @@ export const ensureCameraPermission = async () => {
 
   return 'denied';
 };
-
-const StackBackButton = ({ onPress }) => {
-  const { Pressable, Text } = require('react-native');
-  return React.createElement(
-    Pressable,
-    {
-      accessibilityLabel: 'Go back',
-      accessibilityRole: 'button',
-      onPress,
-      style: { paddingRight: 12, paddingVertical: 8 }
-    },
-    React.createElement(Text, null, 'Back')
-  );
-};
-
-const BackButton = () => {
-  const { useNavigation } = require('@react-navigation/native');
-  const navigation = useNavigation();
-  if (!navigation.canGoBack()) {
-    return null;
-  }
-  return React.createElement(StackBackButton, {
-    onPress: () => navigation.goBack()
-  });
-};
-
-export const createStackScreenOptions = () => ({
-  headerLeft: () => React.createElement(BackButton)
-});
 
 export const RootNavigator = (state) => resolveRouteGroup(state);

@@ -5,11 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSelector } from 'react-redux';
-import {
-  createStackScreenOptions,
-  linking,
-  resolveRouteGroup
-} from './src/navigation/RootNavigator';
+import { linking, resolveRouteGroup } from './src/navigation/RootNavigator';
 import { LoginScreenView } from './src/screens/LoginScreen';
 import { SignupScreenView } from './src/screens/SignupScreen';
 import { ForgotPasswordScreenView } from './src/screens/ForgotPasswordScreen';
@@ -34,7 +30,7 @@ const Tab = createBottomTabNavigator();
 const AuthNavigator = () =>
   React.createElement(
     AuthStack.Navigator,
-    { screenOptions: createStackScreenOptions },
+    null,
     React.createElement(AuthStack.Screen, {
       name: 'Login',
       component: LoginScreenView
@@ -56,7 +52,7 @@ const AuthNavigator = () =>
 const OnboardingNavigator = () =>
   React.createElement(
     OnboardingStack.Navigator,
-    { screenOptions: createStackScreenOptions },
+    null,
     React.createElement(OnboardingStack.Screen, {
       name: 'OnboardingWelcome',
       component: OnboardingWelcomeScreenView
@@ -97,7 +93,7 @@ const AppTabsNavigator = () =>
 const MainAppNavigator = () =>
   React.createElement(
     AppStack.Navigator,
-    { screenOptions: createStackScreenOptions },
+    null,
     React.createElement(AppStack.Screen, {
       name: 'Home',
       component: AppTabsNavigator,

@@ -2,7 +2,6 @@ import {
   AuthStack,
   OnboardingStack,
   AppTabs,
-  createStackScreenOptions,
   ensureCameraPermission,
   resolveRouteGroup,
   linking
@@ -11,11 +10,6 @@ import {
 jest.mock('../services/cameraPermissions', () => ({
   checkCameraPermission: jest.fn(() => Promise.resolve('denied')),
   requestCameraPermission: jest.fn(() => Promise.resolve(true))
-}));
-
-const mockNavigation = { canGoBack: jest.fn(() => false), goBack: jest.fn() };
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(() => mockNavigation)
 }));
 
 test('route guards and linking', () => {
@@ -63,24 +57,4 @@ test('camera permissions preserve unknown request status', async () => {
   const permissions = require('../services/cameraPermissions');
   permissions.requestCameraPermission.mockResolvedValueOnce('unknown');
   await expect(ensureCameraPermission()).resolves.toBe('unknown');
-});
-
-test('stack screen options show an explicit back button only when navigation can go back', () => {
-  const { useNavigation } = require('@react-navigation/native');
-
-  // When can't go back — BackButton renders null
-  useNavigation.mockReturnValue({ canGoBack: () => false, goBack: jest.fn() });
-  const blockedOptions = createStackScreenOptions();
-  const blockedElement = blockedOptions.headerLeft();
-  expect(blockedElement.type()).toBeNull();
-
-  // When can go back — BackButton renders the pressable
-  const goBack = jest.fn();
-  useNavigation.mockReturnValue({ canGoBack: () => true, goBack });
-  const options = createStackScreenOptions();
-  const element = options.headerLeft();
-  const rendered = element.type();
-  expect(typeof rendered.type).toBe('function');
-  rendered.props.onPress();
-  expect(goBack).toHaveBeenCalled();
 });
