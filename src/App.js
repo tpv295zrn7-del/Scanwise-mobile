@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Provider, useSelector, useDispatch, useStore } from 'react-redux';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { createStore } from './redux/store';
 import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
 import { ScreenRenderer } from './renderer/ScreenRenderer';
@@ -101,7 +101,19 @@ const AppNavigator = () => {
     ...(routeParams[currentScreen] || {}),
   });
 
-  return <ScreenRenderer key={currentScreen} descriptor={descriptor} screenName={currentScreen} />;
+  return (
+    <View style={{flex: 1}}>
+      {currentScreen !== 'Home' && (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setCurrentScreen('Home')}
+        >
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+      )}
+      <ScreenRenderer key={currentScreen} descriptor={descriptor} screenName={currentScreen} />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -114,6 +126,20 @@ const styles = StyleSheet.create({
   fallbackText: {
     fontSize: 16,
     color: '#6B7280',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 16,
+    zIndex: 100,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    fontWeight: '600',
+    color: '#374151',
   },
 });
 

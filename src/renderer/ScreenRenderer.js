@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   StyleSheet,
   ActivityIndicator,
   Image,
@@ -196,6 +197,8 @@ const HomeView = ({ descriptor }) => (
 
 // ── Scan ───────────────────────────────────────────────────────
 const ScanView = ({ descriptor }) => {
+  const [manualBarcode, setManualBarcode] = useState('');
+
   // If no camera view props are present, fall back to the simple UI
   if (!descriptor.onBarcodeDetected && !descriptor.handleBarcodeDetected) {
     return (
@@ -231,6 +234,37 @@ const ScanView = ({ descriptor }) => {
           )}
         </View>
       ) : null}
+
+      {/* Manual barcode entry for simulator testing */}
+      <View style={styles.manualEntryContainer}>
+        <TextInput
+          style={styles.manualEntryInput}
+          placeholder="Enter barcode (e.g. 3017620422003)"
+          placeholderTextColor="#9CA3AF"
+          value={manualBarcode}
+          onChangeText={setManualBarcode}
+          onSubmitEditing={() => {
+            const text = manualBarcode.trim();
+            if (text && descriptor.handleBarcodeDetected) {
+              descriptor.handleBarcodeDetected(text);
+              setManualBarcode('');
+            }
+          }}
+          returnKeyType="go"
+        />
+        <TouchableOpacity
+          style={styles.manualEntryButton}
+          onPress={() => {
+            const text = manualBarcode.trim();
+            if (text && descriptor.handleBarcodeDetected) {
+              descriptor.handleBarcodeDetected(text);
+              setManualBarcode('');
+            }
+          }}
+        >
+          <Text style={styles.manualEntryButtonText}>Scan</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScanViewComponent
         onBarcodeDetected={
@@ -932,6 +966,39 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
     marginLeft: 12,
+  },
+  // Manual barcode entry
+  manualEntryContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 16,
+    right: 16,
+    zIndex: 100,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  manualEntryInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  manualEntryButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  manualEntryButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
   // Searching state for ProductResult
   searchingContainer: {
