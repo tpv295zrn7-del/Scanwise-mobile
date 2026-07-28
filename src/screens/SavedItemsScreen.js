@@ -20,7 +20,7 @@ export const SavedItemsScreen = ({
     confidence: item.confidence || 'estimated'
   })),
   empty: savedItems.length === 0,
-  emptyStateText: 'No saved items yet',
+  emptyStateText: 'Scan your first product to get started!',
   removeButtonLabel: 'Remove',
   rescanButtonLabel: 'Re-scan',
   removeItem: (id) => {
