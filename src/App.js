@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Provider, useSelector, useDispatch } from 'react-redux';
+import { Provider, useSelector, useDispatch, useStore } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
 import { createStore } from './redux/store';
 import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
@@ -55,7 +55,8 @@ const AppNavigator = () => {
   const scans = useSelector((s) => s.scans);
   const dispatch = useDispatch();
 
-  const fullState = useSelector((s) => s);
+  const store = useStore();
+  const fullState = store.getState();
   const routeGroup = resolveRouteGroup(fullState);
   const [screenStack, setScreenStack] = useState([
     INITIAL_SCREENS[routeGroup] || 'Home',
