@@ -1,3 +1,5 @@
+import React from 'react';
+
 const getNutrition = (product = {}) => product?.nutrition || {};
 
 export const ComparisonScreen = ({ original = {}, alternative = {} } = {}) => ({
@@ -26,3 +28,28 @@ export const ComparisonScreen = ({ original = {}, alternative = {} } = {}) => ({
       (getNutrition(original).protein || 0)
   }
 });
+
+/* istanbul ignore next */
+export const ComparisonScreenView = ({ route }) => {
+  const { Text, View } = require('react-native');
+  const original = route?.params?.original || {};
+  const alternative = route?.params?.alternative || {};
+  const model = ComparisonScreen({ original, alternative });
+
+  return React.createElement(
+    View,
+    { style: { flex: 1, padding: 16, gap: 8 } },
+    React.createElement(Text, null, model.title),
+    React.createElement(Text, null, `Original: ${model.original.name || 'N/A'}`),
+    React.createElement(
+      Text,
+      null,
+      `Alternative: ${model.alternative.name || 'N/A'}`
+    ),
+    React.createElement(
+      Text,
+      null,
+      `Calories Δ: ${model.summary.caloriesDelta || 0}`
+    )
+  );
+};

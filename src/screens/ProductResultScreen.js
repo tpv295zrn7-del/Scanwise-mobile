@@ -1,5 +1,6 @@
 import { ConfidenceBadge } from '../components/ConfidenceBadge';
 import { FormButton } from '../components/FormButton';
+import React from 'react';
 
 const scoreGoalMatch = (goal = '', comparison = {}) => {
   if (goal === 'low_sugar') return comparison.sugarDelta < 0;
@@ -149,4 +150,54 @@ export const ProductResultScreen = ({
       return saved;
     }
   };
+};
+
+/* istanbul ignore next */
+export const ProductResultScreenView = ({ navigation, route }) => {
+  const { Button, FlatList, Text, View } = require('react-native');
+  const params = route?.params || {};
+  const model = ProductResultScreen({
+    scanResult: params.scanResult || params.result,
+    currentScan: params.scanResult || params.result,
+    alternatives: params.alternatives || [],
+    onCompareToggle: (visible) => visible
+  });
+
+  return React.createElement(
+    View,
+    { style: { flex: 1, padding: 16, gap: 10 } },
+    React.createElement(Text, null, model.productName),
+    React.createElement(Text, null, model.brand),
+    React.createElement(Text, null, `Confidence: ${model.confidence}`),
+    React.createElement(Button, {
+      title: 'Compare',
+      onPress: () => model.toggleComparison()
+    }),
+    React.createElement(Button, {
+      title: 'Correction',
+      onPress: () =>
+        navigation.navigate('CorrectionSubmission', { barcode: model.barcode })
+    }),
+    React.createElement(Button, {
+      title: 'Open Comparison',
+      onPress: () =>
+        navigation.navigate('Comparison', {
+          original: model.currentScan,
+          alternative: model.selectedAlternative
+        })
+    }),
+    React.createElement(FlatList, {
+      data: model.alternatives,
+      keyExtractor: (_, index) => `alt-${index}`,
+      renderItem: ({ item, index }) =>
+        React.createElement(
+          Text,
+          {
+            onPress: () => model.selectAlternative(index),
+            style: { paddingVertical: 8 }
+          },
+          item.name || `Alternative ${index + 1}`
+        )
+    })
+  );
 };

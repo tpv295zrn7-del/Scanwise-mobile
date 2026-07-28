@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 const ISSUE_OPTIONS = [
   'Wrong product',
   'Wrong barcode',
@@ -76,4 +78,46 @@ export const CorrectionSubmissionScreen = ({
       return true;
     }
   };
+};
+
+/* istanbul ignore next */
+export const CorrectionSubmissionScreenView = ({ navigation, route }) => {
+  const { Button, Text, TextInput, View } = require('react-native');
+  const barcode = route?.params?.barcode;
+  const model = CorrectionSubmissionScreen({
+    barcode,
+    onBack: () => navigation.goBack()
+  });
+  const [details, setDetails] = useState('');
+  const [contact, setContact] = useState('');
+  const [status, setStatus] = useState('');
+
+  return React.createElement(
+    View,
+    { style: { flex: 1, padding: 16, gap: 12 } },
+    React.createElement(Text, null, 'Submit correction'),
+    React.createElement(TextInput, {
+      value: details,
+      onChangeText: (value) => {
+        setDetails(value);
+        model.setDetails(value);
+      },
+      placeholder: 'Details'
+    }),
+    React.createElement(TextInput, {
+      value: contact,
+      onChangeText: (value) => {
+        setContact(value);
+        model.setContactInfo(value);
+      },
+      placeholder: 'Contact info'
+    }),
+    status ? React.createElement(Text, null, status) : null,
+    React.createElement(Button, {
+      title: 'Submit',
+      onPress: async () =>
+        setStatus((await model.submit()) ? 'Submitted' : 'Submit failed')
+    }),
+    React.createElement(Button, { title: 'Back', onPress: model.back })
+  );
 };

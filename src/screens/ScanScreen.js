@@ -1,6 +1,8 @@
 import { scanProductByBarcode } from '../redux/thunks/scanThunk';
 import { CancelButton } from '../components/CancelButton';
 import { ScanOverlay } from '../components/ScanOverlay';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import {
   checkCameraPermission,
   requestCameraPermission as requestCameraPermissionService
@@ -305,4 +307,41 @@ export const ScanScreen = ({
   screen.openSettings = () => permission === 'denied';
 
   return screen;
+};
+
+/* istanbul ignore next */
+export const ScanScreenView = ({ navigation }) => {
+  const { Button, Text, TextInput, View } = require('react-native');
+  const dispatch = useDispatch();
+  const [barcode, setBarcode] = useState('');
+  const [status, setStatus] = useState('');
+  const screen = ScanScreen({ dispatch, navigation });
+
+  return React.createElement(
+    View,
+    { style: { flex: 1, padding: 16, gap: 12 } },
+    React.createElement(Text, null, 'Scan Product'),
+    React.createElement(Text, null, screen.instructionText),
+    React.createElement(Button, {
+      title: 'Request Camera',
+      onPress: async () => setStatus(await screen.requestPermission())
+    }),
+    React.createElement(Button, {
+      title: 'Focus Camera',
+      onPress: async () => setStatus(String(await screen.focusCamera()))
+    }),
+    React.createElement(TextInput, {
+      value: barcode,
+      onChangeText: setBarcode,
+      placeholder: 'Manual barcode'
+    }),
+    React.createElement(Button, {
+      title: 'Submit Barcode',
+      onPress: async () => {
+        const result = await screen.submitManualEntry(barcode);
+        setStatus(result ? 'Submitted' : screen.error || 'Failed');
+      }
+    }),
+    status ? React.createElement(Text, null, status) : null
+  );
 };
