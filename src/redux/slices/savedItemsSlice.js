@@ -144,6 +144,8 @@ export const { addItem, saveItem, removeItem, setSavedItems, clearError } =
   savedItemsSlice.actions;
 
 export const selectSavedItems = (state) => state.savedItems.items;
+export const selectSavedItemsLoading = (state) => state.savedItems.loading;
+export const selectSavedItemsError = (state) => state.savedItems.error;
 export const selectIsSaved = (productId) => (state) =>
   state.savedItems.items.some((item) => item.id === productId);
 

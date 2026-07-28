@@ -1,1 +1,1 @@
-export { selectSavedItems, selectIsSaved } from '../slices/savedItemsSlice';
+export { selectSavedItems, selectSavedItemsLoading, selectSavedItemsError, selectIsSaved } from '../slices/savedItemsSlice';

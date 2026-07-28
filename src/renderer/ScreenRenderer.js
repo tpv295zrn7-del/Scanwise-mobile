@@ -13,8 +13,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ComponentRenderer } from './ComponentRenderer';
 import { ScanView as ScanViewComponent } from '../components/ScanView';
 import { fetchProductByBarcode } from '../services/productApi';
-import { saveScan, selectSavedScans, selectIsScanSaved } from '../redux/slices/scansSlice';
-import { saveItem, selectSavedItems } from '../redux/slices/savedItemsSlice';
+import { saveScan, selectIsScanSaved } from '../redux/slices/scansSlice';
+import { saveItem, selectSavedItems, selectSavedItemsLoading, selectSavedItemsError, fetchSavedItems } from '../redux/slices/savedItemsSlice';
 import { COLORS } from '../utils/constants';
 
 const nutriscoreColors = {
@@ -390,6 +390,21 @@ const ProductResultView = ({ descriptor }) => {
 
   // ── Not searching — descriptor already has product data ────────
   if (!needsLookup) {
+    // No product data available — show "no results" state
+    if (!descriptor.productName || descriptor.productName === 'Unknown Product') {
+      return (
+        <View style={styles.centered}>
+          <Text style={styles.screenTitle}>No Results</Text>
+          {descriptor.barcode && (
+            <FieldRow label="Barcode" value={descriptor.barcode} />
+          )}
+          <Text style={styles.emptyStateText}>
+            No product data available for this scan
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <ScrollView contentContainerStyle={styles.screen}>
         <Text style={styles.screenTitle}>
@@ -612,51 +627,91 @@ const ProductResultView = ({ descriptor }) => {
 
 // ── Saved Items ────────────────────────────────────────────────
 const SavedItemsView = ({ descriptor }) => {
+  const dispatch = useDispatch();
   const savedItems = useSelector(selectSavedItems);
-  const savedScans = useSelector(selectSavedScans);
-  console.log('[SAVE-DEBUG] SavedItemsView — savedItems:', savedItems.length, 'savedScans:', savedScans.length);
-  // Use whichever slice has data — bypasses the factory descriptor entirely
-  const items = savedItems.length > 0 ? savedItems : savedScans;
+  const loading = useSelector(selectSavedItemsLoading);
+  const error = useSelector(selectSavedItemsError);
 
+  // Loading state
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.screenTitle}>Saved Items</Text>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.searchingText}>Loading saved items...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.screenTitle}>Saved Items</Text>
+        <Text style={styles.errorText}>Could not load saved items</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => dispatch(fetchSavedItems())}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Empty state
+  if (savedItems.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.screenTitle}>Saved Items</Text>
+        <Image
+          source={descriptor.emptyIllustration}
+          style={styles.emptyIllustration}
+          resizeMode="contain"
+        />
+        <Text style={styles.emptyStateText}>
+          {descriptor.emptyStateText || 'No saved items yet'}
+        </Text>
+      </View>
+    );
+  }
+
+  // Items list
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Text style={styles.screenTitle}>Saved Items</Text>
-      {items.length === 0 ? (
-        <Text style={styles.emptyText}>No saved items yet</Text>
-      ) : (
-        items.map((item) => (
-          <View key={item.barcode || item.id} style={styles.savedItemCard}>
-            {item.image ? (
-              <Image
-                source={
-                  typeof item.image === 'string'
-                    ? { uri: item.image }
-                    : item.image
-                }
-                style={styles.savedItemThumb}
-                resizeMode="contain"
-              />
-            ) : null}
-            <View style={styles.savedItemInfo}>
-              <Text style={styles.cardTitle}>
-                {item.name || item.productName || 'Unknown'}
-              </Text>
-              <Text style={styles.cardSubtitle}>{item.brand || ''}</Text>
+      {savedItems.map((item) => (
+        <View key={item.barcode || item.id} style={styles.savedItemCard}>
+          {item.image ? (
+            <Image
+              source={
+                typeof item.image === 'string'
+                  ? { uri: item.image }
+                  : item.image
+              }
+              style={styles.savedItemThumb}
+              resizeMode="contain"
+            />
+          ) : null}
+          <View style={styles.savedItemInfo}>
+            <Text style={styles.cardTitle}>
+              {item.name || item.productName || 'Unknown'}
+            </Text>
+            <Text style={styles.cardSubtitle}>{item.brand || ''}</Text>
+            <Text style={styles.cardMeta}>
+              Barcode: {item.barcode || item.id}
+            </Text>
+            {(item.lastScannedDate || item.timestamp) && (
               <Text style={styles.cardMeta}>
-                Barcode: {item.barcode || item.id}
+                Saved:{' '}
+                {new Date(
+                  item.lastScannedDate || item.timestamp
+                ).toLocaleDateString()}
               </Text>
-              {(item.lastScannedDate || item.timestamp) && (
-                <Text style={styles.cardMeta}>
-                  Saved:{' '}
-                  {new Date(
-                    item.lastScannedDate || item.timestamp
-                  ).toLocaleDateString()}
-                </Text>
-              )}
-            </View>
+            )}
           </View>
-        ))
-      )}
+        </View>
+      ))}
     </ScrollView>
   );
 };
@@ -1101,5 +1156,31 @@ const styles = StyleSheet.create({
   },
   savedItemInfo: {
     flex: 1,
+  },
+  // Empty state illustration
+  emptyIllustration: {
+    width: 160,
+    height: 160,
+    marginVertical: 24,
+    opacity: 0.6,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  // Retry button for error states
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });
