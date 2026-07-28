@@ -1,15 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
-import { PersistGate } from 'redux-persist/integration/react';
-import { persistStore } from 'redux-persist';
 import { createStore } from './redux/store';
 import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './navigation/RootNavigator';
 import { ScreenRenderer } from './renderer/ScreenRenderer';
 import { selectCurrentUser } from './redux/slices/authSlice';
 import { selectOnboardingProgress } from './redux/slices/onboardingSlice';
 
-// Screen factories — each returns a plain descriptor object
+// Screen factories
 import { HomeScreen } from './screens/HomeScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { SignupScreen } from './screens/SignupScreen';
@@ -26,7 +24,6 @@ import { SavedItemsScreen } from './screens/SavedItemsScreen';
 import { ComparisonScreen } from './screens/ComparisonScreen';
 import { CorrectionSubmissionScreen } from './screens/CorrectionSubmissionScreen';
 
-// Map screen names to factories
 const SCREEN_FACTORIES = {
   Home: HomeScreen,
   Login: LoginScreen,
@@ -45,18 +42,12 @@ const SCREEN_FACTORIES = {
   CorrectionSubmission: CorrectionSubmissionScreen,
 };
 
-// Initial screen per route group
 const INITIAL_SCREENS = {
   AuthStack: 'Login',
   OnboardingStack: 'OnboardingWelcome',
   AppStack: 'Home',
 };
 
-/**
- * Simple in-app navigation: tracks the current screen name,
- * provides a navigate/goBack API compatible with the factory
- * function signatures.
- */
 const AppNavigator = () => {
   const auth = useSelector((s) => s.auth);
   const onboarding = useSelector((s) => s.onboarding);
@@ -97,8 +88,6 @@ const AppNavigator = () => {
     );
   }
 
-  // Build dependencies for the factory.
-  // Each factory destructures only what it needs from this object.
   const user = selectCurrentUser(fullState);
   const progress = selectOnboardingProgress(fullState);
 
@@ -130,35 +119,9 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
-  const storeRef = useRef(null);
-  const persistorRef = useRef(null);
-
-  if (!storeRef.current) {
-    storeRef.current = createStore();
-    persistorRef.current = persistStore(storeRef.current);
-  }
-
-  useEffect(() => {
-    const store = storeRef.current;
-    if (typeof store.subscribe === 'function') {
-      const unsubscribe = store.subscribe(() => {
-        const s = store.getState();
-        console.log(
-          '[SAVE-DEBUG] Store updated — savedItems:',
-          s.savedItems?.items?.length,
-          'scans.savedScans:',
-          s.scans?.savedScans?.length,
-        );
-      });
-      return unsubscribe;
-    }
-  }, []);
-
   return (
-    <Provider store={storeRef.current}>
-      <PersistGate loading={null} persistor={persistorRef.current}>
-        <AppNavigator />
-      </PersistGate>
+    <Provider store={createStore()}>
+      <AppNavigator />
     </Provider>
   );
 }

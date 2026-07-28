@@ -1,15 +1,4 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import {
-  persistStore,
-  persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
-} from 'redux-persist';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { configureStore } from '@reduxjs/toolkit';
 import auth from './slices/authSlice';
 import healthProfiles from './slices/healthProfilesSlice';
 import onboarding from './slices/onboardingSlice';
@@ -19,32 +8,34 @@ import savedItems from './slices/savedItemsSlice';
 import corrections from './slices/correctionsSlice';
 import scan from './slices/scanSlice';
 
-const persistConfig = {
-  key: 'root',
-  storage: AsyncStorage,
-  whitelist: ['savedItems', 'scans'],
+export const createStore = () => {
+  if (global.__REDUX_STORE__) {
+    return global.__REDUX_STORE__;
+  }
+
+  const store = configureStore({
+    reducer: {
+      auth,
+      healthProfiles,
+      onboarding,
+      scans,
+      alternatives,
+      savedItems,
+      corrections,
+      scan,
+    },
+  });
+
+  global.__REDUX_STORE__ = store;
+  return store;
 };
 
-const appReducer = combineReducers({
-  auth,
-  healthProfiles,
-  onboarding,
-  scans,
-  alternatives,
-  savedItems,
-  corrections,
-  scan,
-});
+export const store = createStore();
 
-const persistedReducer = persistReducer(persistConfig, appReducer);
-
-export const createStore = () =>
-  configureStore({
-    reducer: persistedReducer,
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({
-        serializableCheck: {
-          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        },
-      }),
+// Debug subscription
+if (typeof store.subscribe === 'function') {
+  store.subscribe(() => {
+    const s = store.getState();
+    console.log('[SAVE-DEBUG] Store updated — savedItems:', s.savedItems?.items?.length, 'scans.savedScans:', s.scans?.savedScans?.length);
   });
+}
