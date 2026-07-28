@@ -2,6 +2,7 @@ import {
   AuthStack,
   OnboardingStack,
   AppTabs,
+  createStackScreenOptions,
   ensureCameraPermission,
   resolveRouteGroup,
   linking
@@ -57,4 +58,17 @@ test('camera permissions preserve unknown request status', async () => {
   const permissions = require('../services/cameraPermissions');
   permissions.requestCameraPermission.mockResolvedValueOnce('unknown');
   await expect(ensureCameraPermission()).resolves.toBe('unknown');
+});
+
+test('stack screen options show an explicit back button only when navigation can go back', () => {
+  const navigation = { canGoBack: jest.fn(() => true), goBack: jest.fn() };
+  const options = createStackScreenOptions({ navigation });
+
+  expect(options.headerLeft({ canGoBack: false })).toBeNull();
+
+  const backButton = options.headerLeft({ canGoBack: true });
+  expect(backButton.props.accessibilityLabel).toBe('Go back');
+
+  backButton.props.onPress();
+  expect(navigation.goBack).toHaveBeenCalled();
 });
