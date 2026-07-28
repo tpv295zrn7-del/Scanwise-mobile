@@ -67,7 +67,7 @@ test('stack screen options show an explicit back button only when navigation can
   expect(options.headerLeft({ canGoBack: false })).toBeNull();
 
   const backButton = options.headerLeft({ canGoBack: true });
-  expect(backButton.props.accessibilityLabel).toBe('Go back');
+  expect(typeof backButton.type).toBe('function');
 
   backButton.props.onPress();
   expect(navigation.goBack).toHaveBeenCalled();

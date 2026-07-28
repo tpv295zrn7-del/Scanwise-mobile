@@ -51,23 +51,29 @@ export const ensureCameraPermission = async () => {
   return 'denied';
 };
 
+const StackBackButton = ({ onPress }) => {
+  const { Pressable, Text } = require('react-native');
+  return React.createElement(
+    Pressable,
+    {
+      accessibilityLabel: 'Go back',
+      accessibilityRole: 'button',
+      onPress,
+      style: { paddingRight: 12, paddingVertical: 8 }
+    },
+    React.createElement(Text, null, 'Back')
+  );
+};
+
 export const createStackScreenOptions = ({ navigation }) => ({
   headerLeft: ({ canGoBack }) => {
     if (!canGoBack) {
       return null;
     }
 
-    const { Pressable, Text } = require('react-native');
-    return React.createElement(
-      Pressable,
-      {
-        accessibilityLabel: 'Go back',
-        accessibilityRole: 'button',
-        onPress: () => navigation?.goBack?.(),
-        style: { paddingRight: 12, paddingVertical: 8 }
-      },
-      React.createElement(Text, null, 'Back')
-    );
+    return React.createElement(StackBackButton, {
+      onPress: () => navigation?.goBack?.()
+    });
   }
 });
 
