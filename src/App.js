@@ -58,22 +58,20 @@ const AppNavigator = () => {
   const store = useStore();
   const fullState = store.getState();
   const routeGroup = resolveRouteGroup(fullState);
-  const [screenStack, setScreenStack] = useState([
-    INITIAL_SCREENS[routeGroup] || 'Home',
-  ]);
+  const [currentScreen, setCurrentScreen] = useState(
+    INITIAL_SCREENS[routeGroup] || 'Home'
+  );
   const [routeParams, setRouteParams] = useState({});
-
-  const currentScreen = screenStack[screenStack.length - 1];
 
   const navigation = {
     navigate: (name, params) => {
-      setScreenStack((prev) => [...prev, name]);
       if (params) {
-        setRouteParams((prev) => ({ ...prev, [name]: params }));
+        setRouteParams(prev => ({ ...prev, [name]: params }));
       }
+      setCurrentScreen(name);
     },
     goBack: () => {
-      setScreenStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+      setCurrentScreen('Home');
     },
   };
 
@@ -103,7 +101,7 @@ const AppNavigator = () => {
     ...(routeParams[currentScreen] || {}),
   });
 
-  return <ScreenRenderer descriptor={descriptor} screenName={currentScreen} />;
+  return <ScreenRenderer key={currentScreen} descriptor={descriptor} screenName={currentScreen} />;
 };
 
 const styles = StyleSheet.create({
