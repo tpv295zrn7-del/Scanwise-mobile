@@ -155,12 +155,33 @@ export const ProductResultScreen = ({
 /* istanbul ignore next */
 export const ProductResultScreenView = ({ navigation, route }) => {
   const { Button, FlatList, Text, View } = require('react-native');
+  const { useDispatch, useSelector } = require('react-redux');
+  const {
+    addToSavedItems,
+    removeSavedItem,
+    selectIsSaved
+  } = require('../redux/slices/savedItemsSlice');
+  const { useState } = require('react');
+  const dispatch = useDispatch();
   const params = route?.params || {};
+  const scanResult = params.scanResult || params.result || {};
+  const alreadySaved = useSelector(selectIsSaved(scanResult.id));
+  const [saved, setSaved] = useState(alreadySaved);
+
   const model = ProductResultScreen({
-    scanResult: params.scanResult || params.result,
-    currentScan: params.scanResult || params.result,
+    scanResult,
+    currentScan: scanResult,
     alternatives: params.alternatives || [],
-    onCompareToggle: (visible) => visible
+    initiallySaved: alreadySaved,
+    onCompareToggle: (visible) => visible,
+    onSaveToggle: (isSaved) => {
+      if (isSaved) {
+        dispatch(addToSavedItems(scanResult));
+      } else {
+        dispatch(removeSavedItem(scanResult.id));
+      }
+      setSaved(isSaved);
+    }
   });
 
   return React.createElement(
@@ -169,6 +190,10 @@ export const ProductResultScreenView = ({ navigation, route }) => {
     React.createElement(Text, null, model.productName),
     React.createElement(Text, null, model.brand),
     React.createElement(Text, null, `Confidence: ${model.confidence}`),
+    React.createElement(Button, {
+      title: saved ? 'Unsave' : 'Save',
+      onPress: () => model.toggleSave()
+    }),
     React.createElement(Button, {
       title: 'Compare',
       onPress: () => model.toggleComparison()
