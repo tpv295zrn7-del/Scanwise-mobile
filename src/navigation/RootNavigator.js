@@ -66,8 +66,8 @@ const StackBackButton = ({ onPress }) => {
 };
 
 export const createStackScreenOptions = ({ navigation }) => ({
-  headerLeft: ({ canGoBack }) => {
-    if (!canGoBack) {
+  headerLeft: () => {
+    if (!navigation?.canGoBack?.()) {
       return null;
     }
 

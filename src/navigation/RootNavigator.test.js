@@ -61,12 +61,13 @@ test('camera permissions preserve unknown request status', async () => {
 });
 
 test('stack screen options show an explicit back button only when navigation can go back', () => {
+  const blockedNavigation = { canGoBack: jest.fn(() => false), goBack: jest.fn() };
+  const blockedOptions = createStackScreenOptions({ navigation: blockedNavigation });
+  expect(blockedOptions.headerLeft()).toBeNull();
+
   const navigation = { canGoBack: jest.fn(() => true), goBack: jest.fn() };
   const options = createStackScreenOptions({ navigation });
-
-  expect(options.headerLeft({ canGoBack: false })).toBeNull();
-
-  const backButton = options.headerLeft({ canGoBack: true });
+  const backButton = options.headerLeft();
   expect(typeof backButton.type).toBe('function');
 
   backButton.props.onPress();
