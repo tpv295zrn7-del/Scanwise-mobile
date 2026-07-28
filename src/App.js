@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Provider, useSelector, useDispatch } from 'react-redux';
+import { Provider, useSelector, useDispatch, useStore } from 'react-redux';
 import { View, Text, StyleSheet } from 'react-native';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistStore } from 'redux-persist';
@@ -64,7 +64,8 @@ const AppNavigator = () => {
   const scans = useSelector((s) => s.scans);
   const dispatch = useDispatch();
 
-  const fullState = useSelector((s) => s);
+  const store = useStore();
+  const fullState = store.getState();
   const routeGroup = resolveRouteGroup(fullState);
   const [screenStack, setScreenStack] = useState([
     INITIAL_SCREENS[routeGroup] || 'Home',
