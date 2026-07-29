@@ -97,6 +97,11 @@ export const ScanView = ({
   }
 
   // ── Camera view with barcode overlay ──────────────────────────
+  // Overlay elements are rendered as siblings of <CameraView>, not as
+  // children of it. <CameraView> in expo-camera does not support
+  // children — they were being silently dropped and produced a runtime
+  // warning. The wrapper View uses position: relative so the absolutely-
+  // positioned overlay children anchor correctly to the camera area.
   return (
     <View style={styles.container}>
       <CameraView
@@ -111,39 +116,44 @@ export const ScanView = ({
             'aztec', 'datamatrix',
           ],
         }}
-      >
-        {/* Scanning overlay frame */}
-        <View style={styles.overlayContainer}>
-          <View style={styles.overlayFrame}>
-            <View style={[styles.corner, styles.cornerTL]} />
-            <View style={[styles.corner, styles.cornerTR]} />
-            <View style={[styles.corner, styles.cornerBL]} />
-            <View style={[styles.corner, styles.cornerBR]} />
-          </View>
-          <Text style={styles.instructionText}>{instructionText}</Text>
+      />
+      {/* Scanning overlay frame */}
+      <View style={styles.overlayContainer}>
+        <View style={styles.overlayFrame}>
+          <View style={[styles.corner, styles.cornerTL]} />
+          <View style={[styles.corner, styles.cornerTR]} />
+          <View style={[styles.corner, styles.cornerBL]} />
+          <View style={[styles.corner, styles.cornerBR]} />
         </View>
+        <Text style={styles.instructionText}>{instructionText}</Text>
+      </View>
 
-        {/* Cancel button */}
-        {onCancel && (
+      {/* Cancel button */}
+      {onCancel && (
+        <View style={styles.centeredAbsolute} pointerEvents="box-none">
           <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
-        )}
+        </View>
+      )}
 
-        {/* Scanning indicator */}
-        {scanning && !scanned && (
+      {/* Scanning indicator */}
+      {scanning && !scanned && (
+        <View style={styles.centeredAbsoluteTop} pointerEvents="none">
           <View style={styles.scanningIndicator}>
             <Text style={styles.scanningText}>Scanning...</Text>
           </View>
-        )}
+        </View>
+      )}
 
-        {/* Scanned feedback */}
-        {scanned && (
+      {/* Scanned feedback */}
+      {scanned && (
+        <View style={styles.centeredAbsoluteTop} pointerEvents="none">
           <View style={styles.scannedBanner}>
             <Text style={styles.scannedText}>Barcode detected!</Text>
           </View>
-        )}
-      </CameraView>
+        </View>
+      )}
     </View>
   );
 };
@@ -156,10 +166,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+    position: 'relative',
   },
   camera: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   // Permission screen
   permissionContainer: {
@@ -221,7 +231,11 @@ const styles = StyleSheet.create({
   },
   // Overlay
   overlayContainer: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
@@ -257,10 +271,21 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   // Cancel button
-  cancelButton: {
+  centeredAbsolute: {
     position: 'absolute',
     bottom: 50,
-    alignSelf: 'center',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  centeredAbsoluteTop: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  cancelButton: {
     backgroundColor: 'rgba(239,68,68,0.9)',
     paddingHorizontal: 28,
     paddingVertical: 12,
@@ -273,9 +298,6 @@ const styles = StyleSheet.create({
   },
   // Scanning indicator
   scanningIndicator: {
-    position: 'absolute',
-    top: 60,
-    alignSelf: 'center',
     backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 16,
     paddingVertical: 6,
@@ -288,9 +310,6 @@ const styles = StyleSheet.create({
   },
   // Scanned banner
   scannedBanner: {
-    position: 'absolute',
-    top: 60,
-    alignSelf: 'center',
     backgroundColor: 'rgba(16,185,129,0.9)',
     paddingHorizontal: 20,
     paddingVertical: 8,
