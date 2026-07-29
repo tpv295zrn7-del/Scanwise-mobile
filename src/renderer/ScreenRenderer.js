@@ -1172,20 +1172,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  // Saved Items list
+  // Saved Items list — compact so 6+ items fit on one screen.
+  // Tap a card to see the full product detail (name, brand, nutri-score,
+  // category, etc.) — the list view just needs to be scannable, not dense.
   savedItemCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 10,
-    marginVertical: 4,
+    marginVertical: 3,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E5E7EB',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 1,
     elevation: 1,
   },
   // Extra space below the last card so its full tap area sits clearly
@@ -1195,8 +1197,8 @@ const styles = StyleSheet.create({
     marginBottom: 120,
   },
   savedItemThumbWrap: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: 8,
     backgroundColor: '#F3F4F6',
     marginRight: 12,
@@ -1212,15 +1214,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   savedItemName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#111827',
     marginBottom: 1,
   },
   savedItemBrand: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#6B7280',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   savedItemMetaRow: {
     flexDirection: 'row',
@@ -1229,13 +1231,13 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   savedItemBarcode: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#374151',
     fontFamily: 'Courier',
     flex: 1,
   },
   savedItemDate: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#9CA3AF',
   },
   limitedDataBadge: {
@@ -1244,7 +1246,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 1,
-    marginTop: 4,
+    marginTop: 3,
   },
   limitedDataBadgeText: {
     fontSize: 9,
@@ -1254,9 +1256,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   savedItemChevron: {
-    fontSize: 24,
+    fontSize: 18,
     color: '#9CA3AF',
-    marginLeft: 4,
+    marginLeft: 6,
   },
   // Empty state illustration
   emptyIllustration: {
