@@ -682,14 +682,15 @@ const SavedItemsView = ({ descriptor }) => {
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Text style={styles.screenTitle}>Saved Items</Text>
-      {orderedItems.map((item) => {
+      {orderedItems.map((item, index) => {
         const hasLimitedData =
           !item.brand || item.brand === 'Unknown Brand' || !item.brand;
         const fallbackImage = require('../assets/icon-scan.png');
+        const isLast = index === orderedItems.length - 1;
         return (
           <TouchableOpacity
             key={item.barcode || item.id}
-            style={styles.savedItemCard}
+            style={[styles.savedItemCard, isLast && styles.savedItemCardLast]}
             activeOpacity={0.7}
             onPress={() => {
               if (typeof descriptor.viewItem === 'function') {
@@ -892,7 +893,7 @@ const FieldRow = ({ label, value }) => {
   );
 };
 
-// ══════════════════════════════════════════════════════���════════
+// ════════════════════════════════��═════════════════════�����════════
 // Styles
 // ═══════════════════════════════════════════════════════════════
 
@@ -1186,6 +1187,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1,
+  },
+  // Extra space below the last card so its full tap area sits clearly
+  // above the bottom tab bar, even when the list is taller than the
+  // screen and has to be scrolled.
+  savedItemCardLast: {
+    marginBottom: 120,
   },
   savedItemThumbWrap: {
     width: 56,
