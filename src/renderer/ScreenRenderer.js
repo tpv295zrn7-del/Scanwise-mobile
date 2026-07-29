@@ -685,7 +685,18 @@ const SavedItemsView = ({ descriptor }) => {
           !item.brand || item.brand === 'Unknown Brand' || !item.brand;
         const fallbackImage = require('../assets/icon-scan.png');
         return (
-          <View key={item.barcode || item.id} style={styles.savedItemCard}>
+          <TouchableOpacity
+            key={item.barcode || item.id}
+            style={styles.savedItemCard}
+            activeOpacity={0.7}
+            onPress={() => {
+              if (typeof descriptor.viewItem === 'function') {
+                descriptor.viewItem(item.id || item.barcode);
+              }
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`View ${item.name || 'product'} details`}
+          >
             <View style={styles.savedItemThumbWrap}>
               <Image
                 source={
@@ -726,7 +737,8 @@ const SavedItemsView = ({ descriptor }) => {
                 </View>
               )}
             </View>
-          </View>
+            <Text style={styles.savedItemChevron}>›</Text>
+          </TouchableOpacity>
         );
       })}
     </ScrollView>
@@ -1230,6 +1242,12 @@ const styles = StyleSheet.create({
     color: '#92400E',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  savedItemChevron: {
+    fontSize: 28,
+    color: '#9CA3AF',
+    marginLeft: 4,
+    alignSelf: 'center',
   },
   // Empty state illustration
   emptyIllustration: {

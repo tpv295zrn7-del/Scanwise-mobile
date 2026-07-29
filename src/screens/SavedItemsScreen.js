@@ -5,7 +5,8 @@ export const SavedItemsScreen = ({
   items = [],
   onRemove,
   onRescan,
-  onLongPressRemove
+  onLongPressRemove,
+  onViewItem
 } = {}) => {
   const savedItems = state ? selectSavedItems(state) : items;
 
@@ -13,9 +14,12 @@ export const SavedItemsScreen = ({
   emptyIllustration: require('../assets/empty-saved.png'),
   items: savedItems.map((item) => ({
     id: item.id,
-    image: item.image || require('../assets/icon-scan.png'),
+    barcode: item.barcode || item.id,
+    image: item.image || null,
     name: item.name,
     brand: item.brand,
+    nutriscore: item.nutriscore || null,
+    category: item.category || '',
     lastScannedDate: item.lastScannedDate || null,
     confidence: item.confidence || 'estimated'
   })),
@@ -23,6 +27,11 @@ export const SavedItemsScreen = ({
   emptyStateText: 'Scan your first product to get started!',
   removeButtonLabel: 'Remove',
   rescanButtonLabel: 'Re-scan',
+  viewItem: (id) => {
+    const item = savedItems.find((it) => (it.id || it.barcode) === id);
+    if (onViewItem) onViewItem(item);
+    return item || null;
+  },
   removeItem: (id) => {
     if (onRemove) onRemove(id);
     if (onLongPressRemove) onLongPressRemove(id);

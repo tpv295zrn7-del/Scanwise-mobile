@@ -98,6 +98,26 @@ const AppNavigator = () => {
     recentScans: scans?.items || [],
     familyMembers: healthProfiles?.familyMembers || [],
     progress,
+    onViewItem: (item) => {
+      // Open the full product page for a saved item. Transform the saved
+      // item's shape (uses 'name' and singular 'category') to match the
+      // scanResult shape that ProductResultScreen expects ('categories'
+      // plural, and the rest as-is).
+      if (!item) return;
+      navigation.navigate('ProductResult', {
+        scanResult: {
+          barcode: item.barcode,
+          name: item.name,
+          productName: item.name,
+          brand: item.brand,
+          image: item.image,
+          nutriscore: item.nutriscore,
+          categories: item.category,
+          confidence: item.confidence || 'verified',
+          fromSaved: true,
+        },
+      });
+    },
     ...(routeParams[currentScreen] || {}),
   });
 
