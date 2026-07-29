@@ -9,10 +9,14 @@ export const SavedItemsScreen = ({
   onViewItem
 } = {}) => {
   const savedItems = state ? selectSavedItems(state) : items;
+  // Show most recently saved items first so the user doesn't have to
+  // scroll past old items to see what they just scanned. The slice
+  // pushes new items to the end of the array, so we reverse here.
+  const orderedItems = [...savedItems].reverse();
 
   return {
   emptyIllustration: require('../assets/empty-saved.png'),
-  items: savedItems.map((item) => ({
+  items: orderedItems.map((item) => ({
     id: item.id,
     barcode: item.barcode || item.id,
     image: item.image || null,
