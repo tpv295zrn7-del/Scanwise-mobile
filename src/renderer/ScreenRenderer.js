@@ -900,6 +900,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    paddingBottom: 100, // leave room for the bottom tab bar
   },
   fallbackText: {
     fontSize: 16,
@@ -908,6 +909,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     padding: 24,
+    paddingBottom: 100, // leave room for the bottom tab bar (Scan/Saved)
     backgroundColor: '#FFFFFF',
   },
   screenTitle: {
