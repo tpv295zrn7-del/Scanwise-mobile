@@ -676,11 +676,13 @@ const SavedItemsView = ({ descriptor }) => {
     );
   }
 
-  // Items list
+  // Items list — show most recently saved items first so the user sees
+  // what they just scanned at the top of the list, not at the bottom.
+  const orderedItems = [...savedItems].reverse();
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Text style={styles.screenTitle}>Saved Items</Text>
-      {savedItems.map((item) => {
+      {orderedItems.map((item) => {
         const hasLimitedData =
           !item.brand || item.brand === 'Unknown Brand' || !item.brand;
         const fallbackImage = require('../assets/icon-scan.png');
