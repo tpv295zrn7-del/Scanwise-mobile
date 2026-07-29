@@ -892,7 +892,7 @@ const FieldRow = ({ label, value }) => {
   );
 };
 
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════���════════
 // Styles
 // ═══════════════════════════════════════════════════════════════
 
@@ -1174,11 +1174,11 @@ const styles = StyleSheet.create({
   // Saved Items list
   savedItemCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 14,
-    marginVertical: 6,
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 4,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E5E7EB',
     shadowColor: '#000',
@@ -1188,11 +1188,11 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   savedItemThumbWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 8,
     backgroundColor: '#F3F4F6',
-    marginRight: 14,
+    marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -1203,55 +1203,53 @@ const styles = StyleSheet.create({
   },
   savedItemInfo: {
     flex: 1,
-    minHeight: 80,
   },
   savedItemName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   savedItemBrand: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#6B7280',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   savedItemMetaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
+    marginTop: 1,
   },
   savedItemBarcode: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#374151',
     fontFamily: 'Courier',
     flex: 1,
   },
   savedItemDate: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#9CA3AF',
   },
   limitedDataBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#FEF3C7',
     borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginTop: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    marginTop: 4,
   },
   limitedDataBadgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: '#92400E',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   savedItemChevron: {
-    fontSize: 28,
+    fontSize: 24,
     color: '#9CA3AF',
     marginLeft: 4,
-    alignSelf: 'center',
   },
   // Empty state illustration
   emptyIllustration: {
