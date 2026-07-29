@@ -680,38 +680,55 @@ const SavedItemsView = ({ descriptor }) => {
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <Text style={styles.screenTitle}>Saved Items</Text>
-      {savedItems.map((item) => (
-        <View key={item.barcode || item.id} style={styles.savedItemCard}>
-          {item.image ? (
-            <Image
-              source={
-                typeof item.image === 'string'
-                  ? { uri: item.image }
-                  : item.image
-              }
-              style={styles.savedItemThumb}
-              resizeMode="contain"
-            />
-          ) : null}
-          <View style={styles.savedItemInfo}>
-            <Text style={styles.cardTitle}>
-              {item.name || item.productName || 'Unknown'}
-            </Text>
-            <Text style={styles.cardSubtitle}>{item.brand || ''}</Text>
-            <Text style={styles.cardMeta}>
-              Barcode: {item.barcode || item.id}
-            </Text>
-            {(item.lastScannedDate || item.timestamp) && (
-              <Text style={styles.cardMeta}>
-                Saved:{' '}
-                {new Date(
-                  item.lastScannedDate || item.timestamp
-                ).toLocaleDateString()}
+      {savedItems.map((item) => {
+        const hasLimitedData =
+          !item.brand || item.brand === 'Unknown Brand' || !item.brand;
+        const fallbackImage = require('../assets/icon-scan.png');
+        return (
+          <View key={item.barcode || item.id} style={styles.savedItemCard}>
+            <View style={styles.savedItemThumbWrap}>
+              <Image
+                source={
+                  item.image
+                    ? typeof item.image === 'string'
+                      ? { uri: item.image }
+                      : item.image
+                    : fallbackImage
+                }
+                style={styles.savedItemThumb}
+                resizeMode="contain"
+              />
+            </View>
+            <View style={styles.savedItemInfo}>
+              <Text style={styles.savedItemName} numberOfLines={2}>
+                {item.name || item.productName || 'Unknown Product'}
               </Text>
-            )}
+              <Text style={styles.savedItemBrand} numberOfLines={1}>
+                {item.brand && item.brand !== 'Unknown Brand'
+                  ? item.brand
+                  : 'Brand not available'}
+              </Text>
+              <View style={styles.savedItemMetaRow}>
+                <Text style={styles.savedItemBarcode} numberOfLines={1}>
+                  {item.barcode || item.id}
+                </Text>
+                {(item.lastScannedDate || item.timestamp) && (
+                  <Text style={styles.savedItemDate}>
+                    {new Date(
+                      item.lastScannedDate || item.timestamp
+                    ).toLocaleDateString()}
+                  </Text>
+                )}
+              </View>
+              {hasLimitedData && (
+                <View style={styles.limitedDataBadge}>
+                  <Text style={styles.limitedDataBadgeText}>Limited info</Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </ScrollView>
   );
 };
@@ -1140,22 +1157,79 @@ const styles = StyleSheet.create({
   },
   // Saved Items list
   savedItemCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    marginVertical: 6,
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  savedItemThumbWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    marginRight: 14,
+    justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   savedItemThumb: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-    backgroundColor: '#F3F4F6',
+    width: '90%',
+    height: '90%',
   },
   savedItemInfo: {
     flex: 1,
+    minHeight: 80,
+  },
+  savedItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 2,
+  },
+  savedItemBrand: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 6,
+  },
+  savedItemMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  savedItemBarcode: {
+    fontSize: 12,
+    color: '#374151',
+    fontFamily: 'Courier',
+    flex: 1,
+  },
+  savedItemDate: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  limitedDataBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginTop: 6,
+  },
+  limitedDataBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#92400E',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   // Empty state illustration
   emptyIllustration: {
