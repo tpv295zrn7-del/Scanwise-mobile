@@ -101,17 +101,61 @@ const AppNavigator = () => {
     ...(routeParams[currentScreen] || {}),
   });
 
+  const showBottomTabs = ['Home', 'Scan', 'ProductResult', 'Saved', 'Comparison', 'CorrectionSubmission'].includes(currentScreen);
+
+  const goBackFromCurrent = () => {
+    if (
+      currentScreen === 'ProductResult' ||
+      currentScreen === 'Comparison' ||
+      currentScreen === 'CorrectionSubmission' ||
+      currentScreen === 'Saved'
+    ) {
+      setCurrentScreen('Scan');
+    } else {
+      setCurrentScreen('Home');
+    }
+  };
+
   return (
     <View style={{flex: 1}}>
       {currentScreen !== 'Home' && (
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setCurrentScreen('Home')}
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={goBackFromCurrent}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{currentScreen}</Text>
+        </View>
       )}
       <ScreenRenderer key={currentScreen} descriptor={descriptor} screenName={currentScreen} />
+      {showBottomTabs && (
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => setCurrentScreen('Scan')}
+            accessibilityRole="button"
+            accessibilityLabel="Scan tab"
+          >
+            <Text style={[styles.tabText, currentScreen === 'Scan' && styles.tabTextActive]}>
+              Scan
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => setCurrentScreen('Saved')}
+            accessibilityRole="button"
+            accessibilityLabel="Saved tab"
+          >
+            <Text style={[styles.tabText, currentScreen === 'Saved' && styles.tabTextActive]}>
+              Saved
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -127,19 +171,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
   },
-  backButton: {
-    position: 'absolute',
-    top: 60,
-    left: 16,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingTop: 50,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
     zIndex: 100,
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backButtonText: {
+    fontSize: 28,
     fontWeight: '600',
-    color: '#374151',
+    color: '#111827',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#111827',
+    marginLeft: 12,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    paddingBottom: 24,
+    paddingTop: 8,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  tabTextActive: {
+    color: '#10B981',
+    fontWeight: '600',
   },
 });
 
