@@ -6,6 +6,7 @@ import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './naviga
 import { ScreenRenderer } from './renderer/ScreenRenderer';
 import { selectCurrentUser } from './redux/slices/authSlice';
 import { selectOnboardingProgress } from './redux/slices/onboardingSlice';
+import { alternativesThunk } from './redux/slices/alternativesSlice';
 import { analytics } from './services/analytics';
 
 // Screen factories
@@ -99,6 +100,15 @@ const AppNavigator = () => {
     recentScans: scans?.items || [],
     familyMembers: healthProfiles?.familyMembers || [],
     progress,
+    onCompare: (barcode) => {
+      // Fetch alternatives for the current product and navigate to the
+      // Comparison screen. The thunk writes results into the
+      // alternatives slice; the ComparisonScreen reads from there.
+      if (!barcode) return;
+      analytics.track('compare_started', { barcode });
+      dispatch(alternativesThunk(barcode));
+      navigation.navigate('Comparison', { barcode });
+    },
     onViewItem: (item) => {
       // Open the full product page for a saved item. Transform the saved
       // item's shape (uses 'name' and singular 'category') to match the

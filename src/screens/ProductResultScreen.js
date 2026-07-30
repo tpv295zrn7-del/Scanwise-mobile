@@ -37,7 +37,8 @@ export const ProductResultScreen = ({
   onSaveToggle,
   onShowToast,
   onHaptic,
-  onCompareToggle
+  onCompareToggle,
+  onCompare
 } = {}) => {
   const initialProduct = currentScan || scanResult || product || {};
   const resolvedConfidence = initialProduct.confidence || confidence;
@@ -117,7 +118,14 @@ export const ProductResultScreen = ({
     }),
     compareButton: FormButton({
       title: comparisonVisible ? 'Hide Compare' : 'Compare',
-      leftIcon: compareIcon
+      leftIcon: compareIcon,
+      onPress: () => {
+        if (onCompare) {
+          onCompare(initialProduct.barcode);
+        } else if (onCompareToggle) {
+          onCompareToggle(!comparisonVisible);
+        }
+      }
     }),
     correctButton: FormButton({ title: 'Correct', leftIcon: correctIcon }),
     alternativesTitle: 'Alternatives',
