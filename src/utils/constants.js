@@ -9,7 +9,7 @@
 //     the same machine; won't work for an iPhone on Wi-Fi)
 //   - Deployed Render:  'https://scanwise-api.onrender.com'
 //   - Production:       'https://api.scanwise.app'
-export const API_BASE_URL = 'https://api.scanwise.app';
+export const API_BASE_URL = 'https://scanwise-api-q1uz.onrender.com';
 
 export const API_TIMEOUT = 10000;  // 10s per request
 export const RETRY_COUNT = 3;      // exponential backoff retries
