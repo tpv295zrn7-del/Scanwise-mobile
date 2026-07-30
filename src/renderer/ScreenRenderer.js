@@ -16,6 +16,7 @@ import { fetchProductByBarcode } from '../services/productApi';
 import { saveScan, selectIsScanSaved } from '../redux/slices/scansSlice';
 import { saveItem, selectSavedItems, selectSavedItemsLoading, selectSavedItemsError, fetchSavedItems } from '../redux/slices/savedItemsSlice';
 import { COLORS } from '../utils/constants';
+import { analytics } from '../services/analytics';
 
 const nutriscoreColors = {
   a: '#038141',
@@ -328,6 +329,14 @@ const ProductResultView = ({ descriptor }) => {
           timestamp: new Date().toISOString(),
         })
       );
+      // KPI: a product was auto-saved after being viewed
+      analytics.track('product_saved', {
+        barcode: descriptor.barcode,
+        product_name: descriptor.productName,
+        brand: descriptor.brand,
+        nutriscore: descriptor.nutriscore,
+        source: descriptor.fromSaved ? 'saved_list' : 'scan',
+      });
     }
   }, []); // empty deps = fires exactly once on mount
 
@@ -370,9 +379,21 @@ const ProductResultView = ({ descriptor }) => {
               timestamp: new Date().toISOString(),
             })
           );
+          // KPI: scan completed and product resolved from Open Food Facts
+          analytics.track('scan_completed', {
+            barcode: descriptor.barcode,
+            product_name: data.name,
+            brand: data.brand,
+            nutriscore: data.nutriscore,
+            source: 'open_food_facts',
+          });
         } else {
           setNotFound(true);
           setProduct(null);
+          // KPI: scan happened but Open Food Facts didn't know the barcode
+          analytics.track('scan_unknown', {
+            barcode: descriptor.barcode,
+          });
         }
       })
       .catch((err) => {

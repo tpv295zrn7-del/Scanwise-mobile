@@ -1,6 +1,18 @@
+// API configuration — single source of truth for the backend host.
+//
+// To point the app at a different backend (e.g. a deployed staging or
+// production server), update API_BASE_URL below. All HTTP traffic
+// flows through this constant.
+//
+// Examples:
+//   - Local dev sandbox: 'http://localhost:3001' (only reachable from
+//     the same machine; won't work for an iPhone on Wi-Fi)
+//   - Deployed Render:  'https://scanwise-api.onrender.com'
+//   - Production:       'https://api.scanwise.app'
 export const API_BASE_URL = 'https://api.scanwise.app';
-export const API_TIMEOUT = 10000;
-export const RETRY_COUNT = 3;
+
+export const API_TIMEOUT = 10000;  // 10s per request
+export const RETRY_COUNT = 3;      // exponential backoff retries
 
 export const ENDPOINTS = {
   login: '/auth/login',
@@ -13,7 +25,9 @@ export const ENDPOINTS = {
   scans: '/api/scans',
   alternatives: '/api/alternatives',
   savedItems: '/api/saved-items',
-  corrections: '/api/corrections'
+  corrections: '/api/corrections',
+  health: '/api/health',
+  stats: '/api/stats',
 };
 
 export const COLORS = {
@@ -24,5 +38,5 @@ export const COLORS = {
   estimatedBg: '#FEF3C7',
   estimatedText: '#92400E',
   incompleteBg: '#FEE2E2',
-  incompleteText: '#991B1B'
+  incompleteText: '#991B1B',
 };

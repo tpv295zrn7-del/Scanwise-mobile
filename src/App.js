@@ -6,6 +6,7 @@ import { resolveRouteGroup, AuthStack, OnboardingStack, AppTabs } from './naviga
 import { ScreenRenderer } from './renderer/ScreenRenderer';
 import { selectCurrentUser } from './redux/slices/authSlice';
 import { selectOnboardingProgress } from './redux/slices/onboardingSlice';
+import { analytics } from './services/analytics';
 
 // Screen factories
 import { HomeScreen } from './screens/HomeScreen';
@@ -166,7 +167,10 @@ const AppNavigator = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tab}
-            onPress={() => setCurrentScreen('Saved')}
+            onPress={() => {
+              analytics.track('saved_list_viewed');
+              setCurrentScreen('Saved');
+            }}
             accessibilityRole="button"
             accessibilityLabel="Saved tab"
           >
@@ -244,6 +248,12 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
+  // Boot analytics on app startup. Best-effort — failures here must
+  // never block the app from rendering.
+  React.useEffect(() => {
+    analytics.init().catch(() => {});
+  }, []);
+
   return (
     <Provider store={createStore()}>
       <AppNavigator />
