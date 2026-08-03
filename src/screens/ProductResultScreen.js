@@ -121,7 +121,11 @@ export const ProductResultScreen = ({
       leftIcon: compareIcon,
       onPress: () => {
         if (onCompare) {
-          onCompare(initialProduct.barcode);
+          onCompare({
+            barcode: initialProduct.barcode,
+            category: initialProduct.categories || initialProduct.category,
+            name: initialProduct.productName
+          });
         } else if (onCompareToggle) {
           onCompareToggle(!comparisonVisible);
         }

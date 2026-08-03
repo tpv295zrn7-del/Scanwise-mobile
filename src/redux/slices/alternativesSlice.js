@@ -10,8 +10,11 @@ const initialState = {
 
 export const alternativesThunk = createAsyncThunk(
   'alternatives/fetch',
-  async (barcode) => {
-    const response = await endpoints.getAlternatives(barcode);
+  async (payload) => {
+    // Accept either a bare barcode (legacy) or an object with
+    // { barcode, category, name, goals }.
+    const arg = typeof payload === 'string' ? { barcode: payload } : payload || {};
+    const response = await endpoints.getAlternatives(arg);
     return response.data;
   }
 );

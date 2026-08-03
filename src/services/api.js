@@ -103,8 +103,15 @@ export const endpoints = {
   updateProfile: (data) => safeCall(() => api.put(ENDPOINTS.profile, data)),
   scanProduct,
   scanBarcode: scanProduct,
-  getAlternatives: (barcode) =>
-    safeCall(() => api.get(ENDPOINTS.alternatives, { params: { barcode } })),
+  getAlternatives: ({ barcode, category, name, goals } = {}) =>
+    safeCall(() => api.get(ENDPOINTS.alternatives, {
+      params: {
+        ...(barcode ? { barcode } : {}),
+        ...(category ? { category } : {}),
+        ...(name ? { name } : {}),
+        ...(goals && goals.length ? { goals: goals.join(',') } : {})
+      }
+    })),
   addSavedItem: (data) => safeCall(() => api.post(ENDPOINTS.savedItems, data)),
   removeSavedItem: (id) =>
     safeCall(() => api.delete(`${ENDPOINTS.savedItems}/${id}`)),

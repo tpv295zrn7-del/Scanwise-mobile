@@ -100,14 +100,16 @@ const AppNavigator = () => {
     recentScans: scans?.items || [],
     familyMembers: healthProfiles?.familyMembers || [],
     progress,
-    onCompare: (barcode) => {
+    onCompare: (payload) => {
       // Fetch alternatives for the current product and navigate to the
       // Comparison screen. The thunk writes results into the
       // alternatives slice; the ComparisonScreen reads from there.
-      if (!barcode) return;
-      analytics.track('compare_started', { barcode });
-      dispatch(alternativesThunk(barcode));
-      navigation.navigate('Comparison', { barcode });
+      // payload is { barcode, category, name }.
+      const arg = typeof payload === 'string' ? { barcode: payload } : payload || {};
+      if (!arg.barcode) return;
+      analytics.track('compare_started', { barcode: arg.barcode, category: arg.category });
+      dispatch(alternativesThunk(arg));
+      navigation.navigate('Comparison', { barcode: arg.barcode });
     },
     onViewItem: (item) => {
       // Open the full product page for a saved item. Transform the saved
